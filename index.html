@@ -2,8 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITSC Gastronomía - Plataforma Estudiantil</title>
+    <!-- METAS PARA MODO APP NATIVA -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#18181B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>ITSC Gastronomía - App</title>
     
     <!-- TAILWIND CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,19 +50,17 @@
             .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             .spa-view { animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
             @keyframes slideUpFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-            #sidebar.collapsed { width: 5rem; }
-            #sidebar.collapsed .sidebar-text, #sidebar.collapsed .sidebar-footer-card, #sidebar.collapsed .logo-subtitle { display: none; }
-            #sidebar.collapsed .nav-btn { justify-content: center; padding-left: 0; padding-right: 0; }
+            .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         }
     </style>
 </head>
-<body class="bg-bodybg font-sans text-gray-800 flex h-screen overflow-hidden select-none sm:select-auto">
+<body class="bg-bodybg font-sans text-gray-800 flex h-[100dvh] overflow-hidden select-none touch-manipulation">
 
     <!-- TOAST NOTIFICATIONS -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2.5 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-5 lg:top-auto lg:bottom-5 right-5 left-5 lg:left-auto z-[100] flex flex-col gap-2.5 pointer-events-none"></div>
 
     <!-- AUTH MODAL -->
-    <div id="auth-modal" class="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300">
+    <div id="auth-modal" class="fixed inset-0 z-[90] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-brand/15 text-brand rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl shadow-sm"><i class="fa-solid fa-kitchen-set"></i></div>
@@ -84,7 +88,7 @@
                             <input type="password" id="login-password" required placeholder="Tu contraseña" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand focus:bg-white transition">
                         </div>
                     </div>
-                    <button type="submit" class="w-full py-3 bg-brand hover:bg-brand-dark text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2"><span>Ingresar al Sistema</span><i class="fa-solid fa-arrow-right text-xs"></i></button>
+                    <button type="submit" class="w-full py-3 bg-brand hover:bg-brand-dark text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2"><span>Ingresar a la App</span><i class="fa-solid fa-arrow-right text-xs"></i></button>
                 </form>
                 <p class="text-center text-xs text-gray-500 pt-2 border-t border-gray-100 mt-3">¿Nuevo estudiante? <button type="button" onclick="toggleAuthView('register')" class="text-brand font-bold hover:underline">Regístrate</button></p>
             </div>
@@ -109,7 +113,7 @@
             <div id="auth-view-email-sent" class="hidden space-y-5 text-center py-2">
                 <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm"><i class="fa-solid fa-envelope-circle-check"></i></div>
                 <div class="space-y-2">
-                    <h3 class="text-lg font-extrabold text-gray-900">¡Cuenta registrada con éxito!</h3>
+                    <h3 class="text-lg font-extrabold text-gray-900">¡Cuenta registrada!</h3>
                     <p id="fallback-credentials-notice" class="text-xs text-gray-600 pt-2 bg-gray-50 p-3 rounded-xl border border-gray-100"></p>
                 </div>
                 <button type="button" onclick="toggleAuthView('login')" class="w-full py-3 bg-brand hover:bg-brand-dark text-zinc-950 font-bold text-sm rounded-xl shadow-md transition">Ir a Iniciar Sesión</button>
@@ -127,25 +131,23 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
-    <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" aria-hidden="true" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-darkbg text-white flex flex-col justify-between transition-all duration-300 transform -translate-x-full lg:translate-x-0 shrink-0 select-none">
+    <!-- SIDEBAR (SOLO PARA PANTALLAS GRANDES) -->
+    <aside id="sidebar" class="hidden lg:flex flex-col inset-y-0 left-0 z-40 w-64 bg-darkbg text-white justify-between transition-all shrink-0">
         <div>
             <div class="p-5 flex items-center justify-between border-b border-white/10">
                 <div class="flex items-center gap-3 overflow-hidden">
                     <div class="w-10 h-10 rounded-xl bg-brand/20 border border-brand/40 flex items-center justify-center text-brand shrink-0"><i class="fa-solid fa-utensils text-lg"></i></div>
                     <div class="sidebar-text">
                         <h1 class="font-extrabold text-lg tracking-tight leading-none text-white">ITSC <span class="text-brand">Gastro</span></h1>
-                        <p class="text-[10px] text-gray-400 mt-0.5 logo-subtitle">Base de Datos Global</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5 logo-subtitle">Plataforma Académica</p>
                     </div>
                 </div>
-                <button type="button" onclick="toggleSidebarCollapse()" aria-label="Colapsar menú" class="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition"><i class="fa-solid fa-bars-staggered text-sm"></i></button>
             </div>
 
             <nav class="p-3 space-y-1.5 mt-2">
                 <button type="button" onclick="navigateTo('inicio')" data-view="inicio" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition bg-brand text-white shadow-md"><i class="fa-solid fa-house w-5 text-center"></i><span class="sidebar-text">Inicio</span></button>
-                <button type="button" onclick="navigateTo('cursos')" data-view="cursos" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-solid fa-graduation-cap w-5 text-center"></i><span class="sidebar-text">Academia (Cursos)</span></button>
-                <button type="button" onclick="navigateTo('recetas')" data-view="recetas" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-solid fa-book-open w-5 text-center"></i><span class="sidebar-text">Recetario (DB)</span></button>
+                <button type="button" onclick="navigateTo('cursos')" data-view="cursos" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-solid fa-graduation-cap w-5 text-center"></i><span class="sidebar-text">Academia</span></button>
+                <button type="button" onclick="navigateTo('recetas')" data-view="recetas" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-solid fa-book-open w-5 text-center"></i><span class="sidebar-text">Recetario</span></button>
                 <button type="button" onclick="navigateTo('videos')" data-view="videos" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-solid fa-circle-play w-5 text-center"></i><span class="sidebar-text">Videoteca</span></button>
                 <button type="button" onclick="navigateTo('foro')" data-view="foro" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-regular fa-comments w-5 text-center"></i><span class="sidebar-text">Foro y Chat</span></button>
                 <button type="button" onclick="navigateTo('config')" data-view="config" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition"><i class="fa-solid fa-gear w-5 text-center"></i><span class="sidebar-text">Configuración</span></button>
@@ -153,287 +155,222 @@
         </div>
     </aside>
 
-    <!-- CONTENT -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <!-- TOP BAR -->
-        <header class="bg-white/80 backdrop-blur-md border-b border-gray-200/70 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4 shrink-0 z-20">
-            <div class="flex items-center gap-3 flex-1 max-w-xl">
-                <button type="button" onclick="toggleMobileSidebar()" aria-label="Abrir menú" class="lg:hidden w-10 h-10 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-bars"></i></button>
-                <div class="relative w-full">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="global-search" placeholder="Busca Mangú, Postres o cualquier receta..." class="w-full pl-11 pr-9 py-2.5 bg-gray-100/90 hover:bg-gray-100 focus:bg-white border border-transparent focus:border-brand rounded-full text-sm transition focus:outline-none focus:ring-4 focus:ring-brand/10">
-                </div>
+    <!-- CONTENT APP -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- TOP BAR: Diseño limpio y centrado para App -->
+        <header class="bg-white/90 backdrop-blur-md border-b border-gray-200/70 px-4 py-3.5 flex items-center justify-between gap-3 shrink-0 z-20 sticky top-0">
+            <!-- Icono de App móvil -->
+            <div class="lg:hidden w-9 h-9 rounded-xl bg-brand/20 border border-brand/40 flex items-center justify-center text-brand shrink-0"><i class="fa-solid fa-utensils text-sm"></i></div>
+            
+            <div class="relative w-full max-w-xl">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" id="global-search" placeholder="Busca país (ej. Italia) o receta..." class="w-full pl-10 pr-4 py-2 bg-gray-100/90 focus:bg-white border border-transparent focus:border-brand rounded-full text-xs sm:text-sm transition focus:outline-none focus:ring-4 focus:ring-brand/10">
             </div>
-            <div class="flex items-center gap-4">
-                <div onclick="navigateTo('config')" class="flex items-center gap-2.5 cursor-pointer hover:bg-gray-100 p-1.5 pr-3 rounded-full transition">
-                    <div class="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center font-bold shadow-sm"><i class="fa-solid fa-user"></i></div>
-                    <div class="hidden sm:flex flex-col text-left leading-tight">
-                        <span id="header-user-name" class="text-xs font-bold text-gray-800">Estudiante</span>
-                        <span id="header-user-matricula" class="text-[10px] font-mono font-bold text-amber-700">@usuario</span>
-                    </div>
-                </div>
+
+            <!-- Perfil (Lleva a configuración) -->
+            <div onclick="navigateTo('config')" class="shrink-0 flex items-center cursor-pointer">
+                <div class="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center font-bold shadow-sm ring-2 ring-white"><i class="fa-solid fa-user text-sm"></i></div>
             </div>
         </header>
 
-        <!-- CONTAINER VISTAS SPA -->
-        <div id="views-container" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6">
+        <!-- CONTAINER VISTAS SPA (Se añade espacio inferior 'pb-24' para que el menú de abajo no tape el contenido) -->
+        <div id="views-container" class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 lg:pb-8 space-y-6">
             
             <section id="view-inicio" class="spa-view space-y-6">
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 relative rounded-3xl overflow-hidden shadow-lg bg-zinc-900 min-h-[250px] flex items-center p-6 sm:p-10">
+                    <div class="xl:col-span-2 relative rounded-3xl overflow-hidden shadow-lg bg-zinc-900 min-h-[200px] sm:min-h-[250px] flex items-center p-6">
                         <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80" class="absolute inset-0 w-full h-full object-cover opacity-55">
                         <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent"></div>
-                        <div class="relative z-10 max-w-lg text-white space-y-3">
-                            <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight">Bienvenida a la Base Mundial, <span id="hero-user-name" class="text-brand underline">Estudiante</span></h2>
-                            <p class="text-sm sm:text-base text-gray-200">Explora recetas de todos los países extraídas directamente de bases de datos globales.</p>
-                            <button onclick="navigateTo('cursos')" class="mt-2 px-5 py-2.5 bg-brand text-zinc-950 font-bold text-sm rounded-full shadow-md hover:bg-brand-dark transition">Ir a la Academia</button>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center gap-2 mb-4"><i class="fa-solid fa-chart-simple text-brand text-lg"></i><h3 class="font-bold text-gray-900 text-lg">Tu Progreso Académico</h3></div>
-                            <div class="flex items-center justify-center my-2">
-                                <div class="relative w-32 h-32 shrink-0">
-                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36"><path class="text-gray-100" stroke-width="3.8" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/><path class="text-brand" stroke-dasharray="78, 100" stroke-width="3.8" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/></svg>
-                                    <div class="absolute inset-0 flex items-center justify-center"><span class="text-3xl font-extrabold text-gray-900">78%</span></div>
-                                </div>
-                            </div>
+                        <div class="relative z-10 w-full text-white space-y-2">
+                            <h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">Hola, <span id="hero-user-name" class="text-brand underline">Chef</span> 👋</h2>
+                            <p class="text-xs sm:text-base text-gray-200">Explora recetas globales y mejora tu técnica.</p>
+                            <button onclick="navigateTo('cursos')" class="mt-2 px-5 py-2.5 bg-brand text-zinc-950 font-bold text-xs sm:text-sm rounded-full shadow-md hover:bg-brand-dark transition">Entrar a la Academia</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="xl:col-span-2 space-y-6">
-                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                            <div class="flex items-center justify-between mb-4"><h3 class="text-lg font-bold text-gray-900"><i class="fa-solid fa-fire-flame-curved text-brand mr-2"></i>Reels de Técnicas</h3></div>
-                            <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar reels-render-target"></div>
-                        </div>
-                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                            <div class="flex items-center justify-between mb-4"><h3 class="text-lg font-bold text-gray-900"><i class="fa-solid fa-database text-red-600 mr-2"></i>Recetas Destacadas</h3></div>
-                            <div id="dashboard-recent-recipes" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
-                        </div>
+                <div class="space-y-6">
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4"><h3 class="text-base font-bold text-gray-900"><i class="fa-solid fa-fire-flame-curved text-brand mr-2"></i>Técnicas (Reels)</h3></div>
+                        <div class="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory hide-scrollbar reels-render-target"></div>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-3">
-                            <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2"><i class="fa-regular fa-calendar-days text-red-600"></i> Calendario</h3>
-                            <div class="space-y-2 text-xs border-l-2 border-brand pl-3">
-                                <p class="font-bold text-gray-900">Clase Cocina Molecular</p><p class="text-gray-500">Hoy • 9:00 AM (Lab 3)</p>
-                                <p class="font-bold text-gray-900 pt-2">Examen Práctico Final</p><p class="text-gray-500">28 Nov • Cocina Central</p>
-                            </div>
-                        </div>
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4"><h3 class="text-base font-bold text-gray-900"><i class="fa-solid fa-database text-red-600 mr-2"></i>Sugerencias de Hoy</h3></div>
+                        <div id="dashboard-recent-recipes" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- VISTA: ACADEMIA Y CURSOS -->
             <section id="view-cursos" class="spa-view hidden space-y-6">
-                <!-- Encabezado Academia -->
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-2">
+                    <h2 class="text-xl font-extrabold text-gray-900"><i class="fa-solid fa-graduation-cap text-brand mr-2"></i>Cursos</h2>
+                    <p class="text-xs text-gray-500">Aprende técnicas certificadas.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-sm mb-3"><i class="fa-solid fa-book-bookmark text-brand mr-1"></i> Mis Módulos</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center text-lg mb-3"><i class="fa-solid fa-fire-burner"></i></div>
+                            <h4 class="font-extrabold text-gray-900 text-sm">Cocina Profesional I</h4>
+                            <div class="w-full bg-gray-100 rounded-full h-1.5 mt-3 mb-1"><div class="bg-brand h-1.5 rounded-full" style="width: 45%"></div></div>
+                            <button onclick="navigateTo('videos')" class="w-full mt-3 py-2.5 bg-gray-50 hover:bg-brand text-gray-700 hover:text-zinc-950 font-bold text-xs rounded-xl border border-gray-200">Continuar Curso</button>
+                        </div>
+                        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-lg mb-3"><i class="fa-solid fa-cake-candles"></i></div>
+                            <h4 class="font-extrabold text-gray-900 text-sm">Repostería Creativa</h4>
+                            <div class="w-full bg-gray-100 rounded-full h-1.5 mt-3 mb-1"><div class="bg-red-500 h-1.5 rounded-full" style="width: 80%"></div></div>
+                            <button onclick="navigateTo('videos')" class="w-full mt-3 py-2.5 bg-gray-50 hover:bg-red-500 hover:text-white text-gray-700 font-bold text-xs rounded-xl border border-gray-200">Continuar Curso</button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-sm mb-3"><i class="fa-solid fa-video text-brand mr-1"></i> Clases Magistrales</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="tutorial-grid"></div>
+                </div>
+            </section>
+
+            <section id="view-recetas" class="spa-view hidden space-y-4">
+                <h2 class="text-xl font-extrabold text-gray-900 mb-2"><i class="fa-solid fa-server text-brand mr-2"></i>Recetario DB</h2>
+                <div id="db-categories-container" class="flex flex-nowrap overflow-x-auto gap-2 pb-2 hide-scrollbar"></div>
+                <div id="recetas-list" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2"></div>
+            </section>
+
+            <section id="view-videos" class="spa-view hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-extrabold text-gray-900"><i class="fa-brands fa-youtube text-red-600 mr-2"></i>Videos</h2>
+                    <button type="button" onclick="openUploadVideoModal()" class="w-10 h-10 bg-brand text-zinc-950 font-bold rounded-full shadow-md flex items-center justify-center"><i class="fa-solid fa-cloud-arrow-up"></i></button>
+                </div>
+                
+                <div class="bg-zinc-900 rounded-2xl overflow-hidden shadow-lg border border-gray-800 flex flex-col">
+                    <div class="relative aspect-video bg-black flex items-center justify-center group">
+                        <iframe id="main-video-iframe" class="w-full h-full absolute inset-0 hidden border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <video id="main-local-video" class="w-full h-full absolute inset-0 hidden" controls playsinline></video>
+                    </div>
+                    <div class="p-4 text-white">
+                        <span id="main-video-tag" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-brand text-zinc-950">Sistema</span>
+                        <h3 id="main-video-title" class="text-base font-bold pt-1 leading-tight">Selecciona un video</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                    <h4 class="font-bold text-gray-900 text-sm mb-2"><i class="fa-solid fa-list-ul text-brand mr-2"></i>Lista de Reproducción</h4>
+                    <div id="videos-playlist" class="space-y-2 max-h-[300px] overflow-y-auto hide-scrollbar"></div>
+                </div>
+            </section>
+
+            <section id="view-foro" class="spa-view hidden space-y-4">
+                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                     <div>
-                        <h2 class="text-2xl font-extrabold text-gray-900"><i class="fa-solid fa-graduation-cap text-brand mr-2"></i>Academia Culinaria</h2>
-                        <p class="text-sm text-gray-500">Tus cursos, clases magistrales y técnicas certificadas para reproducir sin interrupciones.</p>
+                        <h2 class="text-lg font-extrabold text-gray-900">Foro ITSC</h2>
+                        <p class="text-[10px] text-gray-500">Chat en vivo</p>
                     </div>
-                    <div class="flex gap-2">
-                        <span class="px-3 py-1.5 bg-brand/10 text-brand font-bold text-xs rounded-lg border border-brand/20">Semestre 2026-1</span>
-                    </div>
+                    <span id="socket-status" class="px-2 py-1 bg-red-100 text-red-800 text-[10px] font-bold rounded-full">Desconectado</span>
                 </div>
-
-                <!-- Cursos Oficiales -->
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fa-solid fa-book-bookmark text-brand"></i> Mis Cursos Activos</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-                            <div class="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-fire-burner"></i></div>
-                            <h4 class="font-extrabold text-gray-900">Cocina Profesional I</h4>
-                            <p class="text-xs text-gray-500 mt-1 mb-4">Técnicas base, cortes, fondos y salsas madre.</p>
-                            <div class="w-full bg-gray-100 rounded-full h-2 mb-2"><div class="bg-brand h-2 rounded-full" style="width: 45%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Progreso</span><span>45%</span></div>
-                            <button onclick="navigateTo('videos')" class="w-full mt-4 py-2 bg-gray-50 hover:bg-brand hover:text-zinc-950 text-gray-700 font-bold text-xs rounded-xl transition border border-gray-200">Continuar Curso</button>
-                        </div>
-                        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-                            <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-cake-candles"></i></div>
-                            <h4 class="font-extrabold text-gray-900">Repostería Creativa</h4>
-                            <p class="text-xs text-gray-500 mt-1 mb-4">Masas quebradas, bizcochos, cremas y decoración.</p>
-                            <div class="w-full bg-gray-100 rounded-full h-2 mb-2"><div class="bg-red-500 h-2 rounded-full" style="width: 80%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Progreso</span><span>80%</span></div>
-                            <button onclick="navigateTo('videos')" class="w-full mt-4 py-2 bg-gray-50 hover:bg-red-500 hover:text-white text-gray-700 font-bold text-xs rounded-xl transition border border-gray-200">Continuar Curso</button>
-                        </div>
-                        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-                            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-leaf"></i></div>
-                            <h4 class="font-extrabold text-gray-900">Nutrición Gastronómica</h4>
-                            <p class="text-xs text-gray-500 mt-1 mb-4">Balance nutricional, dietas especiales y menús.</p>
-                            <div class="w-full bg-gray-100 rounded-full h-2 mb-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 15%"></div></div>
-                            <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Progreso</span><span>15%</span></div>
-                            <button onclick="navigateTo('videos')" class="w-full mt-4 py-2 bg-gray-50 hover:bg-emerald-500 hover:text-white text-gray-700 font-bold text-xs rounded-xl transition border border-gray-200">Continuar Curso</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tutoriales y Clases -->
-                <div>
-                    <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fa-solid fa-chalkboard-user text-brand"></i> Clases Magistrales (Acceso Libre)</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="tutorial-grid">
-                        <!-- Renderizado vía JS -->
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-recetas" class="spa-view hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                    <h2 class="text-2xl font-extrabold text-gray-900"><i class="fa-solid fa-server text-brand mr-2"></i>DB Mundial de Recetas</h2>
-                </div>
-                <div id="db-categories-container" class="flex flex-wrap gap-2"></div>
-                <div id="recetas-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-4"></div>
-            </section>
-
-            <!-- VISTA VIDEOS -->
-            <section id="view-videos" class="spa-view hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 class="text-2xl font-extrabold text-gray-900"><i class="fa-brands fa-youtube text-red-600 mr-2"></i>Videoteca DB y Prácticas</h2>
-                    <button type="button" onclick="openUploadVideoModal()" class="px-5 py-2.5 bg-brand text-zinc-950 font-bold text-sm rounded-xl shadow-md transition">Subir mi Práctica Local</button>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-zinc-900 rounded-3xl overflow-hidden shadow-lg border border-gray-800 flex flex-col">
-                        <div class="relative aspect-video bg-black flex items-center justify-center group">
-                            <iframe id="main-video-iframe" class="w-full h-full absolute inset-0 hidden border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                            <video id="main-local-video" class="w-full h-full absolute inset-0 hidden" controls></video>
-                        </div>
-                        <div class="p-6 text-white space-y-2">
-                            <span id="main-video-tag" class="text-xs font-bold uppercase px-2.5 py-1 rounded bg-brand text-zinc-950">Sistema</span>
-                            <h3 id="main-video-title" class="text-xl font-bold pt-1">Selecciona un video</h3>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col">
-                        <h4 class="font-bold text-gray-900 mb-3 px-1"><i class="fa-solid fa-list-ul text-brand mr-2"></i>Lista DB</h4>
-                        <div id="videos-playlist" class="space-y-3 overflow-y-auto max-h-[420px] pr-1"></div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-foro" class="spa-view hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                    <h2 class="text-2xl font-extrabold text-gray-900">Foro y Chat Estudiantil ITSC</h2>
-                    <p class="text-sm text-gray-500">Conectado al servidor WebSocket. Interacción en tiempo real garantizada.</p>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col h-[500px]">
-                        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
-                            <h3 class="font-bold text-gray-900 text-sm"><i class="fa-solid fa-users text-brand mr-2"></i>Conectados</h3>
-                            <span id="socket-status" class="px-2 py-0.5 bg-red-100 text-red-800 text-[10px] font-bold rounded-full">Desconectado</span>
-                        </div>
-                        <div id="online-users-list" class="flex-1 overflow-y-auto py-3 space-y-2.5 text-xs text-gray-700"></div>
-                    </div>
-                    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col h-[500px] overflow-hidden">
-                        <div class="p-4 bg-zinc-900 text-white flex items-center justify-between">
-                            <span class="font-bold text-sm"><i class="fa-solid fa-comments text-brand mr-2"></i>Chat Global</span>
-                        </div>
-                        <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50"></div>
-                        <form id="chat-form" class="p-3 bg-white border-t border-gray-100 flex gap-2 items-center">
-                            <input type="text" id="chat-input-msg" required placeholder="Comparte tu receta..." class="flex-1 px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-brand">
-                            <button type="submit" class="px-5 py-2.5 bg-brand hover:bg-brand-dark text-zinc-950 font-bold text-xs rounded-xl">Enviar</button>
-                        </form>
-                    </div>
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col h-[60vh]">
+                    <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50"></div>
+                    <form id="chat-form" class="p-3 bg-white border-t border-gray-100 flex gap-2 items-center rounded-b-2xl pb-safe">
+                        <input type="text" id="chat-input-msg" required placeholder="Escribe un mensaje..." class="flex-1 px-4 py-2.5 bg-gray-100 border border-transparent rounded-full text-xs focus:outline-none focus:border-brand">
+                        <button type="submit" class="w-10 h-10 bg-brand text-zinc-950 font-bold rounded-full shadow-sm shrink-0 flex items-center justify-center"><i class="fa-solid fa-paper-plane text-sm"></i></button>
+                    </form>
                 </div>
             </section>
             
-            <!-- VISTA: CONFIGURACIÓN DE PERFIL -->
             <section id="view-config" class="spa-view hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <h2 class="text-2xl font-extrabold text-gray-900"><i class="fa-solid fa-gear text-brand mr-2"></i>Configuración de Cuenta</h2>
-                    <button type="button" onclick="logoutSession()" class="px-4 py-2.5 bg-red-50 text-red-600 font-bold text-xs rounded-xl border border-red-200 shadow-sm transition hover:bg-red-100">Cerrar Sesión</button>
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <h2 class="text-xl font-extrabold text-gray-900"><i class="fa-solid fa-gear text-brand mr-2"></i>Tu Cuenta</h2>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <h3 class="font-bold text-gray-900 mb-5 flex items-center gap-2"><i class="fa-solid fa-user-pen text-brand"></i> Perfil Público</h3>
-                        <form id="form-update-profile" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre y Apellido</label>
-                                <input type="text" id="config-name" required class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Usuario (No modificable)</label>
-                                <input type="text" id="config-username" disabled class="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-500 cursor-not-allowed">
-                            </div>
-                            <button type="submit" id="btn-update-profile" class="w-full py-2.5 bg-zinc-900 hover:bg-black text-white font-bold text-sm rounded-xl shadow-md transition mt-2">Guardar Cambios</button>
-                        </form>
-                    </div>
-
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <h3 class="font-bold text-gray-900 mb-5 flex items-center gap-2"><i class="fa-solid fa-shield-halved text-red-500"></i> Seguridad</h3>
-                        <form id="form-update-password" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Contraseña Actual</label>
-                                <input type="password" id="config-current-pwd" required placeholder="Tu contraseña actual" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nueva Contraseña</label>
-                                <input type="password" id="config-new-pwd" required placeholder="Crea una nueva clave" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Confirmar Nueva Contraseña</label>
-                                <input type="password" id="config-confirm-pwd" required placeholder="Repite la nueva clave" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand">
-                            </div>
-                            <button type="submit" id="btn-update-password" class="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm rounded-xl border border-red-200 transition mt-2">Actualizar Contraseña</button>
-                        </form>
-                    </div>
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-900 text-sm mb-4"><i class="fa-solid fa-user-pen text-brand mr-1"></i> Perfil</h3>
+                    <form id="form-update-profile" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Nombre</label>
+                            <input type="text" id="config-name" required class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Usuario</label>
+                            <input type="text" id="config-username" disabled class="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-400">
+                        </div>
+                        <button type="submit" id="btn-update-profile" class="w-full py-2.5 bg-zinc-900 text-white font-bold text-sm rounded-xl shadow-md">Guardar Cambios</button>
+                    </form>
                 </div>
+                <button type="button" onclick="logoutSession()" class="w-full py-3 bg-red-50 text-red-600 font-bold text-sm rounded-2xl border border-red-200 shadow-sm">Cerrar Sesión</button>
             </section>
         </div>
+
+        <!-- ============================================== -->
+        <!-- NUEVO: BARRA DE NAVEGACIÓN INFERIOR (BOTTOM NAV) -->
+        <!-- ============================================== -->
+        <nav class="lg:hidden absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-50 flex justify-around items-center px-2 pb-safe pt-1">
+            <button onclick="navigateTo('inicio')" class="nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-brand" data-view="inicio">
+                <i class="fa-solid fa-house text-lg mb-1"></i>
+                <span class="text-[9px] font-bold tracking-wide">Inicio</span>
+            </button>
+            <button onclick="navigateTo('cursos')" class="nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-gray-400 hover:text-gray-900 transition" data-view="cursos">
+                <i class="fa-solid fa-graduation-cap text-lg mb-1"></i>
+                <span class="text-[9px] font-bold tracking-wide">Cursos</span>
+            </button>
+            <button onclick="navigateTo('recetas')" class="nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-gray-400 hover:text-gray-900 transition" data-view="recetas">
+                <i class="fa-solid fa-book-open text-lg mb-1"></i>
+                <span class="text-[9px] font-bold tracking-wide">Recetas</span>
+            </button>
+            <button onclick="navigateTo('videos')" class="nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-gray-400 hover:text-gray-900 transition" data-view="videos">
+                <i class="fa-solid fa-circle-play text-lg mb-1"></i>
+                <span class="text-[9px] font-bold tracking-wide">Videos</span>
+            </button>
+            <button onclick="navigateTo('foro')" class="nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-gray-400 hover:text-gray-900 transition relative" data-view="foro">
+                <i class="fa-regular fa-comments text-lg mb-1"></i>
+                <span class="absolute top-2 right-4 w-2 h-2 bg-emerald-500 border border-white rounded-full"></span>
+                <span class="text-[9px] font-bold tracking-wide">Chat</span>
+            </button>
+        </nav>
     </main>
 
     <!-- MODAL DE SUBIDA DE VIDEO -->
-    <div id="upload-video-modal" class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button type="button" onclick="closeUploadVideoModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-900 transition text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-xl font-extrabold text-gray-900 mb-1">Compartir mi Práctica</h3>
-            <form id="form-upload-video" onsubmit="handleVideoUploadSubmit(event)" class="space-y-4 mt-5">
-                <input type="text" id="up-title" required placeholder="Título" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand">
-                <textarea id="up-desc" rows="2" placeholder="Descripción" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand"></textarea>
-                <div class="pt-2 border-t border-gray-100">
-                    <input type="url" id="up-url" required placeholder="Enlace de YouTube, TikTok, IG" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs focus:border-brand">
-                </div>
-                <button type="submit" id="btn-upload" class="w-full py-3 bg-brand text-zinc-950 font-bold text-sm rounded-xl shadow-md mt-2">Publicar Práctica a la Base de Datos</button>
+    <div id="upload-video-modal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 shadow-2xl relative pb-safe">
+            <button type="button" onclick="closeUploadVideoModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-lg font-extrabold text-gray-900 mb-4">Compartir Práctica</h3>
+            <form id="form-upload-video" onsubmit="handleVideoUploadSubmit(event)" class="space-y-3">
+                <input type="text" id="up-title" required placeholder="Título" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm">
+                <textarea id="up-desc" rows="2" placeholder="Breve descripción..." class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"></textarea>
+                <input type="url" id="up-url" required placeholder="URL de YouTube" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm">
+                <button type="submit" id="btn-upload" class="w-full py-3 bg-brand text-zinc-950 font-bold text-sm rounded-xl mt-2">Publicar Video</button>
             </form>
         </div>
     </div>
     
     <!-- MODAL RECETAS DB -->
-    <div id="recipe-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-gray-100">
-            <div class="relative h-52 sm:h-64 shrink-0 bg-zinc-900">
-                <img id="modal-recipe-img" src="" alt="Imagen de Receta" class="w-full h-full object-cover opacity-85">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                <button type="button" onclick="closeRecipeModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
-                <div class="absolute bottom-4 left-6 right-6 text-white">
-                    <span id="modal-recipe-cat" class="px-2.5 py-1 rounded-md bg-brand text-zinc-950 font-bold text-[10px] uppercase">Cargando DB...</span>
-                    <h3 id="modal-recipe-title" class="text-2xl font-extrabold mt-1">Nombre de la Receta</h3>
-                    <p id="modal-recipe-meta" class="text-xs text-gray-300 mt-0.5">Consultando servidores internacionales...</p>
+    <div id="recipe-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-3xl h-[85vh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="relative h-48 shrink-0 bg-zinc-900">
+                <img id="modal-recipe-img" src="" alt="Receta" class="w-full h-full object-cover opacity-80">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                <button type="button" onclick="closeRecipeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <div class="absolute bottom-4 left-5 right-5 text-white">
+                    <span id="modal-recipe-cat" class="px-2 py-0.5 rounded text-brand bg-brand/20 font-bold text-[9px] uppercase backdrop-blur-sm">Cargando...</span>
+                    <h3 id="modal-recipe-title" class="text-xl font-extrabold mt-1 leading-tight">Nombre</h3>
                 </div>
             </div>
-            <div class="p-6 overflow-y-auto flex-1 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-amber-50/60 border border-amber-200/60 rounded-2xl p-4 h-fit">
-                        <h4 class="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-basket-shopping text-brand"></i><span>Ingredientes DB</span></h4>
-                        <ul id="modal-recipe-ingredients" class="space-y-2 text-xs text-gray-700"></ul>
-                    </div>
-                    <div class="md:col-span-2 space-y-3">
-                        <h4 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i class="fa-solid fa-fire-burner text-brand"></i><span>Instrucciones</span></h4>
-                        <div id="modal-recipe-instructions" class="text-xs sm:text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-inner"></div>
-                    </div>
+            <div class="p-5 overflow-y-auto flex-1 space-y-5 pb-safe">
+                <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                    <h4 class="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1.5"><i class="fa-solid fa-basket-shopping text-brand"></i>Ingredientes</h4>
+                    <ul id="modal-recipe-ingredients" class="space-y-1.5 text-xs text-gray-700"></ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1.5"><i class="fa-solid fa-fire-burner text-brand"></i>Instrucciones</h4>
+                    <div id="modal-recipe-instructions" class="text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-2xl"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- MODAL REELS VERTICAL -->
-    <div id="reels-modal" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-lg hidden items-center justify-center p-4">
-        <button type="button" onclick="closeReelsModal()" class="absolute top-5 right-5 w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 text-white flex items-center justify-center transition z-10 text-xl border border-white/20"><i class="fa-solid fa-xmark"></i></button>
-        <div class="relative w-full max-w-[380px] h-[80vh] bg-zinc-900 rounded-[2rem] overflow-hidden shadow-2xl shadow-brand/20">
+    <div id="reels-modal" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-lg hidden items-center justify-center p-0">
+        <button type="button" onclick="closeReelsModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center z-10 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <div class="relative w-full h-[100dvh] sm:max-w-[380px] sm:h-[85vh] bg-black sm:rounded-[2rem] overflow-hidden">
              <iframe id="reels-iframe" class="w-full h-full border-0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
-             <div class="absolute bottom-6 left-6 right-16 text-white pointer-events-none drop-shadow-md">
-                 <p id="reels-author" class="text-xs font-bold text-brand mb-1">@Chef</p>
+             <div class="absolute bottom-16 sm:bottom-6 left-5 right-16 text-white pointer-events-none drop-shadow-md">
+                 <p id="reels-author" class="text-xs font-bold text-brand mb-0.5">@Chef</p>
                  <h4 id="reels-title" class="text-sm font-extrabold leading-tight">Título</h4>
              </div>
         </div>
@@ -441,14 +378,14 @@
 
     <!-- SCRIPT DE INTEGRACIÓN -->
     <script>
-        // La URL de tu backend cambiará cuando lo subas a Render. Por ahora, pon esta plantilla:
-const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://127.0.0.1:3000' 
-    : 'https://gastro-backend-3tgk.onrender.com'; 
+        // ¡ACTUALIZADO! 1. Tu enlace real de Render ya está aquí conectado.
+        const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:3000' 
+            : 'https://gastro-backend-3tgk.onrender.com';
 
-const API_URL = `${BACKEND_URL}/api`; 
-const API_BASE_URL = 'https://www.themealdb.com/api/json/v1/1';
-let socket = null;
+        const API_URL = `${BACKEND_URL}/api`; 
+        const API_BASE_URL = 'https://www.themealdb.com/api/json/v1/1';
+        let socket = null;
 
         const EMAILJS_SERVICE_ID = 'service_wksv8tj';
         const EMAILJS_TEMPLATE_ID = 'template_zjlbvtc';
@@ -456,14 +393,14 @@ let socket = null;
         window.currentActiveView = 'inicio';
         window.chatMessages = [];
         window.studentVideos = [];
-        
         window.currentUser = null;
+        
         const savedToken = sessionStorage.getItem('itsc_token');
         const savedUser = sessionStorage.getItem('itsc_user_data');
         if (savedToken && savedUser) window.currentUser = JSON.parse(savedUser);
 
         window.escapeHTML = function(str) {
-            if (str === null || str === undefined) return '';
+            if (str == null) return '';
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         };
 
@@ -474,57 +411,12 @@ let socket = null;
             toast.className = `bg-zinc-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-3 pointer-events-auto`;
             toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-xmark text-red-500' : 'fa-circle-info text-brand'} text-sm"></i><span>${escapeHTML(message)}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
+            setTimeout(() => toast.remove(), 3500);
         };
 
-        const dictionaryES = {
-            "Beef": "Res", "Chicken": "Pollo", "Dessert": "Postres", "Lamb": "Cordero", "Miscellaneous": "Variados", 
-            "Pasta": "Pastas", "Pork": "Cerdo", "Seafood": "Mariscos", "Side": "Guarnición", "Starter": "Entrada", 
-            "Vegan": "Vegano", "Vegetarian": "Vegetariano", "Breakfast": "Desayuno", "Goat": "Chivo", "Soup": "Sopa",
-            "American": "Americana", "British": "Británica", "Canadian": "Canadiense", "Chinese": "China", 
-            "Croatian": "Croata", "Dutch": "Holandesa", "Egyptian": "Egipcia", "Filipino": "Filipina", 
-            "French": "Francesa", "Greek": "Griega", "Indian": "India", "Irish": "Irlandesa", "Italian": "Italiana", 
-            "Jamaican": "Jamaiquina", "Japanese": "Japonesa", "Kenyan": "Keniata", "Malaysian": "Malaya", 
-            "Mexican": "Mexicana", "Moroccan": "Marroquí", "Polish": "Polaca", "Portuguese": "Portuguesa", 
-            "Russian": "Rusa", "Spanish": "Española", "Thai": "Tailandesa", "Tunisian": "Tunecina", 
-            "Turkish": "Turca", "Vietnamese": "Vietnamita",
-            "Pie": "Tarta", "Cake": "Pastel", "Stew": "Estofado", "Roast": "Asado", "Baked": "Horneado", 
-            "Fried": "Frito", "Spicy": "Picante", "Sweet": "Dulce", "Sour": "Agridulce", "Sauce": "Salsa",
-            "Salad": "Ensalada", "Burger": "Hamburguesa", "Cheese": "Queso", "Bacon": "Tocino", "Garlic": "Ajo",
-            "Onion": "Cebolla", "Tomato": "Tomate", "Potato": "Papa", "Mushroom": "Champiñón", "Rice": "Arroz",
-            "Pancakes": "Panqueques", "Tart": "Tarta", "Pudding": "Pudín", "Chocolate": "Chocolate",
-            "Fish": "Pescado", "Salmon": "Salmón", "Shrimp": "Camarones", "Steak": "Filete", "Ribs": "Costillas",
-            "Pork Chops": "Chuletas de Cerdo", "Chicken Breast": "Pechuga de Pollo", "Wings": "Alitas",
-            "Water": "Agua", "Milk": "Leche", "Butter": "Mantequilla", "Flour": "Harina", "Salt": "Sal", "Sugar": "Azúcar",
-            "Oil": "Aceite", "Olive Oil": "Aceite de Oliva", "Pepper": "Pimienta", "Egg": "Huevo", "Eggs": "Huevos",
-            "cup": "taza", "cups": "tazas", "teaspoon": "cdta", "teaspoons": "cdtas", "tablespoon": "cda", 
-            "tablespoons": "cdas", "oz": "onzas", "ounce": "onza", "ounces": "onzas", "pound": "libra", 
-            "pounds": "libras", "pinch": "pizca", "clove": "diente", "cloves": "dientes", "slice": "rebanada", 
-            "slices": "rebanadas", "dash": "chorrito", "to serve": "para servir", "to taste": "al gusto",
-            "chopped": "picado", "diced": "en cubitos", "sliced": "en rodajas", "minced": "picado fino", "peeled": "pelado"
-        };
-
-        function traducirTexto(texto) {
-            if (!texto) return '';
-            let t = texto;
-            for (let [en, es] of Object.entries(dictionaryES)) {
-                t = t.replace(new RegExp(`\\b${en}\\b`, 'gi'), es);
-            }
-            return t;
-        }
-
-        async function traducirInstrucciones(texto) {
-            if (!texto) return '';
-            try {
-                const snippet = texto.slice(0, 480);
-                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(snippet)}&langpair=en|es`);
-                const data = await res.json();
-                if (data && data.responseData && data.responseData.translatedText) {
-                    return data.responseData.translatedText + (texto.length > 480 ? '... (Traducción parcial para optimizar carga)' : '');
-                }
-            } catch (e) {}
-            return traducirTexto(texto); 
-        }
+        const dictionaryES = { "Beef": "Res", "Chicken": "Pollo", "Dessert": "Postre", "Lamb": "Cordero", "Miscellaneous": "Variados", "Pasta": "Pastas", "Pork": "Cerdo", "Seafood": "Mariscos", "Side": "Guarnición", "Starter": "Entrada", "Vegan": "Vegano", "Vegetarian": "Vegetariano", "Breakfast": "Desayuno", "Water": "Agua", "Milk": "Leche", "Butter": "Mantequilla", "Flour": "Harina", "Salt": "Sal", "Sugar": "Azúcar", "Oil": "Aceite", "Pepper": "Pimienta", "Egg": "Huevo", "cup": "taza", "teaspoon": "cdta", "tablespoon": "cda" };
+        function traducirTexto(t) { if(!t) return ''; let r = t; for (let [en, es] of Object.entries(dictionaryES)) r = r.replace(new RegExp(`\\b${en}\\b`, 'gi'), es); return r; }
+        async function traducirInstrucciones(t) { if(!t) return ''; try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(t.slice(0, 480))}&langpair=en|es`); const data = await res.json(); if (data?.responseData?.translatedText) return data.responseData.translatedText + (t.length > 480 ? '...' : ''); } catch (e) {} return traducirTexto(t); }
 
         window.initDatabaseCategories = async function() {
             try {
@@ -532,12 +424,8 @@ let socket = null;
                 const data = await res.json();
                 const container = document.getElementById('db-categories-container');
                 if (container && data.categories) {
-                    let html = data.categories.map(c => `
-                        <button type="button" onclick="loadDatabaseCategory('${c.strCategory}')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-semibold bg-gray-100 hover:bg-brand hover:text-zinc-950 text-gray-700 transition shadow-sm border border-gray-200">
-                            ${traducirTexto(c.strCategory)}
-                        </button>
-                    `).join('');
-                    html += `<button type="button" onclick="loadSimulatedLocalDB()" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 transition shadow-sm"><i class="fa-solid fa-map-location-dot mr-1"></i> Recetas de RD/KR</button>`;
+                    let html = `<button type="button" onclick="loadSimulatedLocalDB()" class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">Todas las Locales (RD/Italia)</button>`;
+                    html += data.categories.map(c => `<button type="button" onclick="loadDatabaseCategory('${c.strCategory}')" class="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-semibold bg-gray-100 hover:bg-brand text-gray-700 border border-gray-200">${traducirTexto(c.strCategory)}</button>`).join('');
                     container.innerHTML = html;
                 }
             } catch (error) {}
@@ -546,569 +434,294 @@ let socket = null;
         window.loadDatabaseCategory = async function(category) {
             const container = document.getElementById('recetas-list');
             if (!container) return;
-            container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><i class="fa-solid fa-server fa-spin text-3xl text-brand mb-2"></i><p class="text-xs font-bold uppercase mt-2 text-gray-600">Consultando Servidor (${traducirTexto(category)})...</p></div>`;
-            try {
-                const response = await fetch(`${API_BASE_URL}/filter.php?c=${category}`);
-                const data = await response.json();
-                renderRecipesList(data.meals || [], category);
-            } catch (err) {}
+            container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl text-brand mb-2"></i></div>`;
+            try { const res = await fetch(`${API_BASE_URL}/filter.php?c=${category}`); const data = await res.json(); renderRecipesList(data.meals || [], category); } catch (err) {}
         };
 
-        const mockDominicanKoreanDB = [
-            { idMeal: "rd_sancocho", strMeal: "Sancocho de 7 Carnes (RD)", strCategory: "Soup", strArea: "Dominican", strMealThumb: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80", strInstructions: "Sofreír las 7 carnes sazonadas.\r\nAñadir agua, víveres (auyama, plátanos, yuca).\r\nCocinar hasta espesar.", strIngredient1: "Carnes surtidas", strMeasure1: "1.5 kg", strIngredient2: "Víveres variados", strMeasure2: "1 kg" },
-            { idMeal: "rd_mangu", strMeal: "Mangú con Los Tres Golpes (RD)", strCategory: "Breakfast", strArea: "Dominican", strMealThumb: "https://images.unsplash.com/photo-1594998893017-36147fc3e0ab?auto=format&fit=crop&w=600&q=80", strInstructions: "Hervir plátanos verdes con sal.\r\nMachacar con mantequilla.\r\nAcompañar con queso frito, salami dominicano y huevo frito.", strIngredient1: "Plátanos verdes", strMeasure1: "4 uds", strIngredient2: "Salami y Queso", strMeasure2: "200g c/u" }
+        // ¡ACTUALIZADO! 3. Recetas locales y clásicos Italianos añadidos
+        const mockLocalDB = [
+            { idMeal: "rd_sancocho", strMeal: "Sancocho 7 Carnes", strCategory: "Soup", strArea: "Dominican", strMealThumb: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80", strInstructions: "Sofreír carnes sazonadas. Añadir agua, plátano, yuca y auyama.", strIngredient1: "Carnes surtidas", strMeasure1: "1.5 kg", strIngredient2: "Víveres", strMeasure2: "1 kg" },
+            { idMeal: "rd_mangu", strMeal: "Mangú 3 Golpes", strCategory: "Breakfast", strArea: "Dominican", strMealThumb: "https://images.unsplash.com/photo-1594998893017-36147fc3e0ab?auto=format&fit=crop&w=600&q=80", strInstructions: "Hervir plátanos y machacar con agua fría y mantequilla. Freír queso y salami.", strIngredient1: "Plátanos verdes", strMeasure1: "4 uds", strIngredient2: "Salami", strMeasure2: "200g" },
+            { idMeal: "it_lasagna", strMeal: "Lasaña Boloñesa", strCategory: "Pasta", strArea: "Italian", strMealThumb: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=600&q=80", strInstructions: "Intercalar capas de pasta fresca, salsa boloñesa, bechamel y queso parmesano. Hornear a 200°C por 30 minutos.", strIngredient1: "Láminas de Lasaña", strMeasure1: "500g", strIngredient2: "Carne molida y salsa", strMeasure2: "400g" },
+            { idMeal: "it_pizza", strMeal: "Pizza Margherita (Nápoles)", strCategory: "Miscellaneous", strArea: "Italian", strMealThumb: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80", strInstructions: "Estirar masa con las manos. Untar tomate triturado, trozos de mozzarella de búfala y albahaca fresca. Hornear al máximo.", strIngredient1: "Masa de pizza", strMeasure1: "1 ud", strIngredient2: "Mozzarella Fresca", strMeasure2: "200g" },
+            { idMeal: "it_risotto", strMeal: "Risotto de Champiñones", strCategory: "Vegetarian", strArea: "Italian", strMealThumb: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80", strInstructions: "Sofreír arroz arborio. Verter caldo de verduras caliente cucharón por cucharón removiendo sin parar. Finalizar con mantequilla y parmesano.", strIngredient1: "Arroz Arborio", strMeasure1: "300g", strIngredient2: "Champiñones", strMeasure2: "250g" }
         ];
-        window.loadSimulatedLocalDB = function() { renderRecipesList(mockDominicanKoreanDB, "Especialidades Locales (RD/KR)"); };
+        window.loadSimulatedLocalDB = function() { renderRecipesList(mockLocalDB, "Platos Locales e Italianos"); };
 
+        // ¡ACTUALIZADO! 2. Búsqueda inteligente por nombre Y POR PAÍS
         window.fetchGlobalSearch = async function(query) {
             const container = document.getElementById('recetas-list');
             if (!container) return;
-            container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><i class="fa-solid fa-server fa-spin text-3xl text-brand mb-2"></i><p class="text-xs">Buscando '${escapeHTML(query)}' en todo el mundo...</p></div>`;
+            container.innerHTML = `<div class="col-span-full text-center py-8"><i class="fa-solid fa-spinner fa-spin text-2xl text-brand"></i></div>`;
+            
             try {
-                let combinadas = [];
-                if (query.trim() !== '') {
-                    const response = await fetch(`${API_BASE_URL}/search.php?s=${encodeURIComponent(query)}`);
-                    const data = await response.json();
-                    combinadas = data.meals || [];
+                let comb = [];
+                const queryLower = query.toLowerCase().trim();
+                
+                if (queryLower !== '') {
+                    // Mapa traductor para detectar cuando alguien busca un país en español
+                    const countryMap = { "italia": "Italian", "mexico": "Mexican", "españa": "Spanish", "japon": "Japanese", "china": "Chinese", "francia": "French", "india": "Indian", "rd": "Dominican", "dominicana": "Dominican", "republica dominicana": "Dominican", "canada": "Canadian", "reino unido": "British" };
+                    
+                    let apiArea = null;
+                    for (let [es, en] of Object.entries(countryMap)) {
+                        if (queryLower.includes(es)) apiArea = en;
+                    }
+
+                    // A) Si detectamos un país, buscamos todo el recetario de ese país
+                    if (apiArea) {
+                        try {
+                            const resArea = await fetch(`${API_BASE_URL}/filter.php?a=${apiArea}`); 
+                            const dataArea = await resArea.json(); 
+                            if(dataArea.meals) comb = [...comb, ...dataArea.meals];
+                        } catch(e) {}
+                    }
+
+                    // B) Búsqueda normal por nombre de receta en la DB mundial
+                    try {
+                        const resName = await fetch(`${API_BASE_URL}/search.php?s=${encodeURIComponent(query)}`); 
+                        const dataName = await resName.json(); 
+                        if(dataName.meals) comb = [...comb, ...dataName.meals];
+                    } catch(e) {}
+                    
+                    // Limpiar duplicados (si una receta sale en el filtro de país y de nombre a la vez)
+                    comb = Array.from(new Set(comb.map(a => a.idMeal))).map(id => comb.find(a => a.idMeal === id));
                 }
-                const mockMatches = mockDominicanKoreanDB.filter(r => r.strMeal.toLowerCase().includes(query.toLowerCase()) || r.strArea.toLowerCase().includes(query.toLowerCase()));
-                if (mockMatches.length > 0) combinadas = [...mockMatches, ...combinadas];
-                renderRecipesList(combinadas, query ? "Resultados de Búsqueda" : "Global");
-            } catch (err) {}
+
+                // C) Filtrar también en nuestra base de datos local (Mocks) por nombre o área
+                const mocks = mockLocalDB.filter(r => 
+                    r.strMeal.toLowerCase().includes(queryLower) || 
+                    traducirTexto(r.strArea).toLowerCase().includes(queryLower)
+                );
+
+                renderRecipesList([...mocks, ...comb], query ? "Resultados de: " + query : "Global");
+            } catch (err) {
+                container.innerHTML = `<div class="col-span-full text-center py-8 text-xs font-bold text-red-500">Error buscando</div>`;
+            }
         };
 
-        window.renderRecipesList = function(recipes, labelCategory = "Global") {
+        window.renderRecipesList = function(recipes, label = "Global") {
             const container = document.getElementById('recetas-list');
             if (!container) return;
-            if (!recipes || recipes.length === 0) {
-                container.innerHTML = `<div class="col-span-full bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm"><i class="fa-solid fa-utensils text-2xl text-brand mb-2"></i><h4 class="font-bold text-gray-900">No hay registros en la DB</h4></div>`;
-                return;
-            }
-
+            if (!recipes.length) { container.innerHTML = `<div class="col-span-full text-center py-8 text-xs font-bold text-gray-400">Sin resultados</div>`; return; }
             container.innerHTML = recipes.map(r => `
-                <div onclick="openRecipeModalDB('${r.idMeal}')" class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition cursor-pointer flex flex-col justify-between group">
-                    <div>
-                        <div class="relative h-44 overflow-hidden">
-                            <img src="${escapeHTML(r.strMealThumb)}" alt="${escapeHTML(r.strMeal)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <span class="absolute top-3 left-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-white/10">${escapeHTML(traducirTexto(r.strArea || labelCategory))}</span>
-                        </div>
-                        <div class="p-5 space-y-1">
-                            <h3 class="font-bold text-gray-900 text-base group-hover:text-brand transition line-clamp-2 leading-tight">${escapeHTML(traducirTexto(r.strMeal))}</h3>
-                        </div>
-                    </div>
-                    <div class="px-5 pb-4 pt-2 border-t border-gray-50 flex items-center justify-between text-[11px] font-bold text-amber-800 uppercase tracking-wide bg-amber-50/40">
-                        <span>Consultar Detalles a DB</span>
-                        <i class="fa-solid fa-database group-hover:translate-x-1 transition"></i>
-                    </div>
+                <div onclick="openRecipeModalDB('${r.idMeal}')" class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm flex flex-col active:scale-95 transition-transform">
+                    <div class="relative h-28 sm:h-36"><img src="${escapeHTML(r.strMealThumb)}" class="w-full h-full object-cover"><span class="absolute top-2 left-2 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">${escapeHTML(traducirTexto(r.strArea || 'DB Mundial'))}</span></div>
+                    <div class="p-3"><h3 class="font-bold text-gray-900 text-xs line-clamp-2">${escapeHTML(traducirTexto(r.strMeal))}</h3></div>
                 </div>
             `).join('');
         };
 
-        window.openRecipeModalDB = async function(idMeal) {
-            const modal = document.getElementById('recipe-modal');
-            const instructionsEl = document.getElementById('modal-recipe-instructions');
-            const ingredientsEl = document.getElementById('modal-recipe-ingredients');
+        window.openRecipeModalDB = async function(id) {
+            document.getElementById('recipe-modal').classList.remove('hidden'); document.getElementById('recipe-modal').classList.add('flex');
+            document.getElementById('modal-recipe-title').textContent = "Consultando..."; document.getElementById('modal-recipe-instructions').innerHTML = `<i class="fa-solid fa-spinner fa-spin text-brand"></i>`;
             
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            document.getElementById('modal-recipe-title').textContent = "Consultando Base de Datos...";
-            document.getElementById('modal-recipe-cat').textContent = "CARGANDO DATOS";
-            instructionsEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-brand text-lg"></i> <span class="font-bold text-gray-600">Traduciendo datos desde el servidor...</span>`;
-            ingredientsEl.innerHTML = `<li class="text-gray-500 italic">Cargando ingredientes DB...</li>`;
-
-            let recipe = mockDominicanKoreanDB.find(r => r.idMeal === idMeal);
-
-            if (!recipe) {
-                try {
-                    const res = await fetch(`${API_BASE_URL}/lookup.php?i=${idMeal}`);
-                    const data = await res.json();
-                    recipe = data.meals[0];
-                } catch(e) {}
-            }
+            let recipe = mockLocalDB.find(r => r.idMeal === id);
+            if (!recipe) { try { const res = await fetch(`${API_BASE_URL}/lookup.php?i=${id}`); const data = await res.json(); recipe = data.meals[0]; } catch(e) {} }
 
             document.getElementById('modal-recipe-img').src = recipe.strMealThumb;
-            document.getElementById('modal-recipe-cat').textContent = `${traducirTexto(recipe.strArea || 'Mundial')} • ${traducirTexto(recipe.strCategory || 'Platillo')}`;
             document.getElementById('modal-recipe-title').textContent = traducirTexto(recipe.strMeal);
             
-            let rawInstructions = recipe.strInstructions || 'Sin instrucciones formales en la DB.';
-            let translatedInstructions = (recipe.strArea === 'Dominican' || recipe.strArea === 'Korean') ? rawInstructions : await traducirInstrucciones(rawInstructions);
+            let rawInst = recipe.strInstructions || 'Sin instrucciones.';
+            let inst = (recipe.strArea === 'Dominican') ? rawInst : await traducirInstrucciones(rawInst);
+            let steps = inst.split(/(?:\r\n|\n|\r)/).filter(s => s.length > 2);
+            document.getElementById('modal-recipe-instructions').innerHTML = `<ul class="list-disc pl-4 space-y-1">` + steps.map(s => `<li>${escapeHTML(s)}</li>`).join('') + `</ul>`;
 
-            let steps = translatedInstructions.split(/(?:\r\n|\n|\r)/).map(s => s.trim()).filter(s => s.length > 2);
-            if(steps.length === 1 && steps[0].includes('.')) steps = steps[0].split(/\.\s+/).map(s => s.trim()).filter(s => s.length > 2);
-
-            if (steps.length > 0) {
-                instructionsEl.innerHTML = `<ul class="list-disc list-outside pl-4 space-y-2 text-gray-800">` + steps.map(step => `<li>${escapeHTML(step)}</li>`).join('') + `</ul>`;
-            } else {
-                instructionsEl.innerHTML = "No hay pasos definidos.";
-            }
-
-            let ingredientsHTML = '';
-            for (let i = 1; i <= 20; i++) {
-                const ing = recipe[`strIngredient${i}`];
-                const measure = recipe[`strMeasure${i}`];
-                if (ing && ing.trim() !== '') {
-                    ingredientsHTML += `<li class="flex items-center gap-2 border-b border-gray-100 pb-2 mb-2">
-                        <i class="fa-solid fa-check text-brand text-[10px]"></i>
-                        <span class="font-extrabold text-gray-900">${escapeHTML(traducirTexto(measure))}</span> 
-                        <span class="text-gray-700">${escapeHTML(traducirTexto(ing))}</span>
-                    </li>`;
+            let ingHTML = '';
+            for (let i = 1; i <= 15; i++) {
+                if (recipe[`strIngredient${i}`]?.trim()) {
+                    ingHTML += `<li class="flex items-center gap-1.5 border-b border-gray-100 pb-1.5"><i class="fa-solid fa-check text-brand text-[8px]"></i><span class="font-bold text-gray-900">${escapeHTML(traducirTexto(recipe[`strMeasure${i}`]))}</span> <span class="text-gray-600">${escapeHTML(traducirTexto(recipe[`strIngredient${i}`]))}</span></li>`;
                 }
             }
-            ingredientsEl.innerHTML = ingredientsHTML || '<li>Datos no especificados en DB</li>';
+            document.getElementById('modal-recipe-ingredients').innerHTML = ingHTML;
         };
         window.closeRecipeModal = function() { document.getElementById('recipe-modal').classList.add('hidden'); document.getElementById('recipe-modal').classList.remove('flex'); };
 
-        // ==========================================
-        // ACADEMIA CULINARIA: TUTORIALES 
-        // ==========================================
         const tutorialesData = [
-            { id: 'tut1', title: 'Fondos Básicos y Salsas Madre', duration: '12 min', img: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80', tag: 'Cocina Prof. I', videoId: 'aqz-KE-bpKQ' },
-            { id: 'tut2', title: 'Cortes de Vegetales (Juliana, Brunoise)', duration: '15 min', img: 'https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&w=600&q=80', tag: 'Técnicas', videoId: 'dQw4w9WgXcQ' },
-            { id: 'tut3', title: 'Receta de Sancocho', duration: '18 min', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80', tag: 'Cocina RD', videoId: 'jNQXAC9IVRw' },
-            { id: 'tut4', title: 'Cómo hacer el Mangú Perfecto', duration: '20 min', img: 'https://images.unsplash.com/photo-1594998893017-36147fc3e0ab?auto=format&fit=crop&w=600&q=80', tag: 'Desayuno', videoId: 'aqz-KE-bpKQ' }
+            { id: 'tut1', title: 'Fondos Básicos', duration: '12 min', img: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80', tag: 'Básico', videoId: 'aqz-KE-bpKQ' },
+            { id: 'tut2', title: 'Cortes de Vegetales', duration: '15 min', img: 'https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&w=600&q=80', tag: 'Técnica', videoId: 'dQw4w9WgXcQ' },
+            { id: 'tut3', title: 'Sancocho', duration: '18 min', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80', tag: 'RD', videoId: 'jNQXAC9IVRw' },
+            { id: 'tut4', title: 'El Mangú Perfecto', duration: '20 min', img: 'https://images.unsplash.com/photo-1594998893017-36147fc3e0ab?auto=format&fit=crop&w=600&q=80', tag: 'Desayuno', videoId: 'aqz-KE-bpKQ' }
         ];
 
         window.renderTutorials = function() {
             const container = document.getElementById('tutorial-grid');
             if(container) {
                 container.innerHTML = tutorialesData.map(tut => `
-                    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition cursor-pointer group" onclick="playTutorial('${tut.id}')">
-                        <div class="relative h-32 overflow-hidden">
-                            <img src="${tut.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-play text-white text-3xl"></i></div>
-                            <span class="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">${tut.duration}</span>
-                        </div>
-                        <div class="p-3 space-y-1">
-                            <span class="text-[9px] font-extrabold text-brand uppercase tracking-wider">${tut.tag}</span>
-                            <h4 class="font-bold text-gray-900 text-sm leading-tight line-clamp-2 group-hover:text-brand transition">${tut.title}</h4>
-                        </div>
+                    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-95 transition-transform" onclick="playTutorial('${tut.id}')">
+                        <div class="relative h-24 sm:h-32"><img src="${tut.img}" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black/20 flex items-center justify-center"><i class="fa-solid fa-play text-white text-xl"></i></div></div>
+                        <div class="p-2"><span class="text-[8px] font-extrabold text-brand uppercase">${tut.tag}</span><h4 class="font-bold text-gray-900 text-xs leading-tight line-clamp-1">${tut.title}</h4></div>
                     </div>
                 `).join('');
             }
         };
 
         window.playTutorial = function(id) {
-            const tut = tutorialesData.find(t => t.id === id);
-            if(!tut) return;
-            
+            const tut = tutorialesData.find(t => t.id === id); if(!tut) return;
             navigateTo('videos');
+            document.getElementById('main-local-video').classList.add('hidden');
             const iframe = document.getElementById('main-video-iframe');
-            const localVid = document.getElementById('main-local-video');
-            
-            localVid.classList.add('hidden');
-            localVid.pause();
-            localVid.src = '';
-            
             iframe.classList.remove('hidden');
             iframe.src = `https://www.youtube.com/embed/${tut.videoId}?autoplay=1&rel=0&modestbranding=1`;
-            
-            document.getElementById('main-video-tag').textContent = tut.tag;
-            document.getElementById('main-video-title').textContent = tut.title;
+            document.getElementById('main-video-tag').textContent = tut.tag; document.getElementById('main-video-title').textContent = tut.title;
         };
 
-        // ==========================================
-        // REELS (USANDO IDs PÚBLICOS GARANTIZADOS)
-        // ==========================================
         const reelsData = [
-            { id: 'reel1', type: 'youtube', title: 'Técnica de Cortes Rápida', author: '@ChefRapido', img: 'https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&w=400&q=80', videoId: 'aqz-KE-bpKQ' },
-            { id: 'reel2', type: 'youtube', title: 'Tip para Sancocho', author: '@CocinaLatina', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', videoId: 'dQw4w9WgXcQ' },
-            { id: 'reel3', type: 'youtube', title: 'El Secreto del Mangú', author: '@fresh_yummyrd', img: 'https://images.unsplash.com/photo-1594998893017-36147fc3e0ab?auto=format&fit=crop&w=400&q=80', videoId: 'jNQXAC9IVRw' },
-            { id: 'reel4', type: 'youtube', title: 'Cómo picar Cebolla', author: '@GastroITSC', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80', videoId: 'aqz-KE-bpKQ' }
+            { id: 'reel1', title: 'Cortes Rápido', author: '@ChefRapido', img: 'https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&w=400&q=80', videoId: 'aqz-KE-bpKQ' },
+            { id: 'reel2', title: 'Sancocho', author: '@CocinaLatina', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', videoId: 'dQw4w9WgXcQ' },
+            { id: 'reel3', title: 'Mangú', author: '@fresh_yummyrd', img: 'https://images.unsplash.com/photo-1594998893017-36147fc3e0ab?auto=format&fit=crop&w=400&q=80', videoId: 'jNQXAC9IVRw' }
         ];
 
         window.renderReels = function() {
-            const containers = document.querySelectorAll('.reels-render-target');
-            containers.forEach(container => {
-                container.innerHTML = reelsData.map(reel => {
-                    return `
-                    <div onclick="playReel('${reel.id}')" class="relative shrink-0 w-36 h-60 sm:w-40 sm:h-64 rounded-2xl overflow-hidden cursor-pointer group snap-center shadow-sm border border-gray-200 bg-zinc-900">
-                        <img src="${escapeHTML(reel.img)}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-90">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><div class="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center text-lg shadow-lg"><i class="fa-brands fa-youtube"></i></div></div>
-                        <div class="absolute bottom-3 left-3 right-3 text-white"><p class="text-[10px] font-bold text-brand drop-shadow-md">${escapeHTML(reel.author)}</p><p class="text-xs font-extrabold leading-tight line-clamp-2 drop-shadow-md">${escapeHTML(reel.title)}</p></div>
+            document.querySelectorAll('.reels-render-target').forEach(c => {
+                c.innerHTML = reelsData.map(reel => `
+                    <div onclick="playReel('${reel.id}')" class="relative shrink-0 w-28 h-48 sm:w-36 sm:h-60 rounded-2xl overflow-hidden bg-zinc-900 snap-center shadow-sm">
+                        <img src="${escapeHTML(reel.img)}" class="absolute inset-0 w-full h-full object-cover opacity-80"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center shadow-md"><i class="fa-solid fa-play text-xs"></i></div></div>
+                        <div class="absolute bottom-2 left-2 right-2 text-white"><p class="text-[8px] font-bold text-brand line-clamp-1">${escapeHTML(reel.author)}</p><p class="text-[10px] font-extrabold line-clamp-1">${escapeHTML(reel.title)}</p></div>
                     </div>
-                `}).join('');
+                `).join('');
             });
         };
 
         window.playReel = function(id) {
-            const reel = reelsData.find(r => r.id === id);
-            if(!reel) return;
+            const reel = reelsData.find(r => r.id === id); if(!reel) return;
             const iframe = document.getElementById('reels-iframe');
-            
-            iframe.src = ''; 
-            iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(reel.videoId)}?autoplay=1&rel=0&modestbranding=1`;
-            
-            document.getElementById('reels-modal').classList.remove('hidden');
-            document.getElementById('reels-modal').classList.add('flex');
+            iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(reel.videoId)}?autoplay=1&rel=0&controls=0&modestbranding=1`;
+            document.getElementById('reels-title').textContent = reel.title;
+            document.getElementById('reels-modal').classList.remove('hidden'); document.getElementById('reels-modal').classList.add('flex');
         };
-        
-        window.closeReelsModal = function() { 
-            document.getElementById('reels-modal').classList.add('hidden'); 
-            document.getElementById('reels-modal').classList.remove('flex'); 
-            document.getElementById('reels-iframe').src = ''; 
+        window.closeReelsModal = function() { document.getElementById('reels-modal').classList.add('hidden'); document.getElementById('reels-iframe').src = ''; };
+
+        window.selectVideo = function(videoId) {
+            const v = window.videosData.find(i => i.id === videoId); if (!v) return;
+            const iframe = document.getElementById('main-video-iframe'); const localVid = document.getElementById('main-local-video');
+            if (v.isLocal) { iframe.classList.add('hidden'); localVid.classList.remove('hidden'); localVid.src = v.localUrl; localVid.play(); } 
+            else { localVid.classList.add('hidden'); iframe.classList.remove('hidden'); iframe.src = `https://www.youtube.com/embed/${v.videoId}?autoplay=0&rel=0`; }
+            document.getElementById('main-video-tag').textContent = v.tag; document.getElementById('main-video-title').textContent = v.title;
         };
 
-        // ==========================================
-        // CONFIGURACIÓN DE CUENTA
-        // ==========================================
+        window.fetchVideosFromAPI = async function() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/search.php?s=chicken`); const data = await res.json();
+                const apiVids = (data.meals || []).filter(m => m.strYoutube).map(m => ({
+                    id: 'yt_'+m.idMeal, title: traducirTexto(m.strMeal), tag: traducirTexto(m.strCategory), videoId: m.strYoutube.split('v=')[1], type: 'youtube', isLocal: false
+                }));
+                window.videosData = [...window.studentVideos, ...apiVids.slice(0, 10)];
+                document.getElementById('videos-playlist').innerHTML = window.videosData.map(v => `
+                    <div onclick="selectVideo('${v.id}')" class="p-2.5 rounded-xl border border-gray-50 bg-gray-50 flex items-center gap-3 active:bg-gray-100">
+                        <div class="w-8 h-8 rounded-lg ${v.isLocal ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} flex items-center justify-center shrink-0 text-xs"><i class="fa-brands ${v.isLocal ? 'fa-play' : 'fa-youtube'}"></i></div>
+                        <div class="flex-1 min-w-0"><p class="text-xs font-bold text-gray-900 truncate">${escapeHTML(v.title)}</p><p class="text-[9px] text-gray-500">${escapeHTML(v.tag)}</p></div>
+                    </div>`).join('');
+                if(window.videosData.length) selectVideo(window.videosData[0].id);
+            } catch (err) {}
+        };
+
         window.updateUIWithUser = function() {
             if(!window.currentUser) return;
-            const headName = document.getElementById('header-user-name');
-            const heroName = document.getElementById('hero-user-name');
-            const headMat = document.getElementById('header-user-matricula');
-            
-            if(headName) headName.textContent = window.currentUser.name;
-            if(heroName) heroName.textContent = window.currentUser.name;
-            if(headMat) headMat.textContent = '@' + window.currentUser.usuario;
-
-            const configName = document.getElementById('config-name');
-            const configUsername = document.getElementById('config-username');
-            if(configName) configName.value = window.currentUser.name;
-            if(configUsername) configUsername.value = window.currentUser.usuario;
+            const headName = document.getElementById('header-user-name'); const heroName = document.getElementById('hero-user-name');
+            if(headName) headName.textContent = window.currentUser.name.split(' ')[0];
+            if(heroName) heroName.textContent = window.currentUser.name.split(' ')[0];
+            document.getElementById('config-name').value = window.currentUser.name; document.getElementById('config-username').value = window.currentUser.usuario;
         };
 
-        document.getElementById('form-update-profile')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newName = document.getElementById('config-name').value.trim();
-            const btn = document.getElementById('btn-update-profile');
-            const originalText = btn.innerText;
-            try {
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Guardando...`;
-                const res = await fetch(`${API_URL}/user/profile`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario: window.currentUser.usuario, newName })
-                });
-                if (!res.ok) throw new Error('Error al actualizar el perfil en el servidor');
-                const data = await res.json();
-                window.currentUser.name = data.user.name;
-                sessionStorage.setItem('itsc_user_data', JSON.stringify(window.currentUser));
-                updateUIWithUser();
-                showToast('Perfil actualizado correctamente', 'success');
-            } catch(err) { showToast(err.message === 'Failed to fetch' ? 'El servidor está apagado' : err.message, 'error'); } finally { btn.innerText = originalText; }
-        });
-
-        document.getElementById('form-update-password')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const currentPassword = document.getElementById('config-current-pwd').value.trim();
-            const newPassword = document.getElementById('config-new-pwd').value.trim();
-            const confirmPassword = document.getElementById('config-confirm-pwd').value.trim();
-            const btn = document.getElementById('btn-update-password');
-            const originalText = btn.innerText;
-
-            if (newPassword !== confirmPassword) return showToast('Las contraseñas nuevas no coinciden', 'error');
-
-            try {
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Actualizando...`;
-                const res = await fetch(`${API_URL}/user/password`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario: window.currentUser.usuario, currentPassword, newPassword })
-                });
-                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Error al actualizar contraseña'); }
-                e.target.reset(); 
-                showToast('Contraseña actualizada con éxito', 'success');
-            } catch(err) { showToast(err.message === 'Failed to fetch' ? 'El servidor está apagado' : err.message, 'error'); } finally { btn.innerText = originalText; }
-        });
-
-        // ==========================================
-        // WEBSOCKETS (CHAT)
-        // ==========================================
         function initRealtimeConnection() {
             if (typeof io !== 'undefined') {
-                socket = io(BACKEND_URL);
+                socket = io(BACKEND_URL); 
                 socket.on('connect', () => {
-                    const badge = document.getElementById('socket-status');
-                    if(badge) { badge.textContent = 'En línea'; badge.className = 'px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full'; }
+                    const badge = document.getElementById('socket-status'); if(badge) { badge.textContent = 'En línea'; badge.className = 'px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-bold rounded-full'; }
                     if(window.currentUser) socket.emit('join_chat', window.currentUser);
-                });
-                socket.on('update_online_users', (users) => {
-                    const list = document.getElementById('online-users-list');
-                    if(list) list.innerHTML = users.map(u => `<div class="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50 border border-gray-100"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 animate-pulse"></div><span class="font-bold text-xs text-gray-800 truncate">${escapeHTML(u.name)}</span></div>`).join('');
                 });
                 socket.on('load_chat_history', (msgs) => { window.chatMessages = msgs; renderChatMessages(); });
                 socket.on('receive_message', (msg) => { window.chatMessages.push(msg); renderChatMessages(); });
-                socket.on('disconnect', () => {
-                    const badge = document.getElementById('socket-status');
-                    if(badge) { badge.textContent = 'Desconectado'; badge.className = 'px-2 py-0.5 bg-red-100 text-red-800 text-[10px] font-bold rounded-full'; }
-                });
+                socket.on('disconnect', () => { const badge = document.getElementById('socket-status'); if(badge) { badge.textContent = 'Desconectado'; badge.className = 'px-2 py-0.5 bg-red-100 text-red-800 text-[9px] font-bold rounded-full'; } });
             }
         }
 
         document.getElementById('chat-form')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = document.getElementById('chat-input-msg');
-            if(!input.value.trim() || !socket) return;
-            socket.emit('send_message', { sender: window.currentUser.name, usuario: window.currentUser.usuario, text: input.value.trim(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            e.preventDefault(); const input = document.getElementById('chat-input-msg'); if(!input.value.trim() || !socket) return;
+            socket.emit('send_message', { sender: window.currentUser.name.split(' ')[0], usuario: window.currentUser.usuario, text: input.value.trim(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
             input.value = '';
         });
 
         window.renderChatMessages = function() {
-            const container = document.getElementById('chat-messages-container');
-            if (!container) return;
+            const container = document.getElementById('chat-messages-container'); if (!container) return;
             container.innerHTML = window.chatMessages.map(msg => {
                 const isMe = window.currentUser && msg.usuario === window.currentUser.usuario;
-                return `<div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1"><span class="text-[10px] font-bold text-gray-500 px-1">${escapeHTML(msg.sender)} • <span class="font-normal text-gray-400">${escapeHTML(msg.time)}</span></span><div class="max-w-[80%] px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm shadow-sm ${isMe ? 'bg-brand text-zinc-950 rounded-tr-none font-medium' : 'bg-white text-gray-800 border border-gray-200/80 rounded-tl-none'}">${escapeHTML(msg.text)}</div></div>`;
+                return `<div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-0.5"><span class="text-[9px] font-bold text-gray-400 px-1">${escapeHTML(msg.sender)}</span><div class="max-w-[85%] px-3 py-2 rounded-2xl text-[13px] shadow-sm ${isMe ? 'bg-brand text-zinc-950 rounded-tr-sm font-medium' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'}">${escapeHTML(msg.text)}</div></div>`;
             }).join('');
             container.scrollTop = container.scrollHeight;
         };
 
-        // ==========================================
-        // AUTHENTICATION (LOGIN / REGISTRO)
-        // ==========================================
         document.getElementById('login-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const identifier = document.getElementById('login-identifier').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const btnText = btn.innerHTML;
-
+            e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const txt = btn.innerHTML;
             try {
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-white text-lg"></i>`;
-                const response = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifier, password })
-                });
-                
-                if (!response.ok) throw new Error('Credenciales incorrectas');
-                const data = await response.json();
-                
-                window.currentUser = data.user;
-                sessionStorage.setItem('itsc_token', data.token);
-                sessionStorage.setItem('itsc_user_data', JSON.stringify(data.user));
-                
-                updateUIWithUser();
-                initRealtimeConnection();
-                closeAuthModal();
-                navigateTo('inicio');
-                
-            } catch (error) { showToast('Backend no conectado o credenciales erróneas', 'error'); } finally { btn.innerHTML = btnText; }
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+                const res = await fetch(`${API_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifier: document.getElementById('login-identifier').value, password: document.getElementById('login-password').value }) });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                window.currentUser = data.user; sessionStorage.setItem('itsc_token', data.token); sessionStorage.setItem('itsc_user_data', JSON.stringify(data.user));
+                updateUIWithUser(); initRealtimeConnection(); closeAuthModal();
+            } catch (e) { showToast('Credenciales incorrectas o Servidor Apagado', 'error'); } finally { btn.innerHTML = txt; }
         });
         
         document.getElementById('register-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('register-submit-btn');
-            const originalText = btn.innerHTML;
-            const name = document.getElementById('register-name').value.trim();
-            const email = document.getElementById('register-email').value.trim();
-
+            e.preventDefault(); const btn = document.getElementById('register-submit-btn'); const txt = btn.innerHTML;
             try {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-brand"></i><span>Generando...</span>`;
-
-                const primerNombre = name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                const usuario = `${primerNombre}${Math.floor(1000 + Math.random() * 9000)}`;
-                const password = Math.random().toString(36).slice(-8);
-
-                const response = await fetch(`${API_URL}/auth/register`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, usuario, password })
-                });
-
-                if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || 'Error al registrar'); }
-                
-                const finalizarRegistro = () => {
-                    document.getElementById('register-form').reset();
-                    document.getElementById('fallback-credentials-notice').innerHTML = `Tus credenciales han sido enviadas a <strong>${email}</strong>.`;
-                    btn.disabled = false; btn.innerHTML = originalText;
-                    toggleAuthView('email-sent');
-                };
-
-                if (window.emailjs) {
-                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_name: name, to_email: email, usuario, password })
-                        .then(finalizarRegistro).catch(() => { showToast("Usuario creado en DB, pero falló el correo.", "error"); finalizarRegistro(); });
-                } else finalizarRegistro();
-            } catch (error) { showToast(error.message === 'Failed to fetch' ? 'El servidor está apagado.' : error.message, 'error'); btn.disabled = false; btn.innerHTML = originalText; }
+                btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+                const name = document.getElementById('register-name').value; const email = document.getElementById('register-email').value;
+                const usr = name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(1000 + Math.random() * 9000); const pwd = Math.random().toString(36).slice(-8);
+                const res = await fetch(`${API_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, usuario: usr, password: pwd }) });
+                if (!res.ok) throw new Error();
+                const fin = () => { document.getElementById('fallback-credentials-notice').innerHTML = `Credenciales enviadas a <strong>${email}</strong>.`; toggleAuthView('email-sent'); btn.disabled=false; btn.innerHTML=txt; };
+                if (window.emailjs) emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_name: name, to_email: email, usuario: usr, password: pwd }).then(fin).catch(fin); else fin();
+            } catch (e) { showToast('Error en servidor o ya registrado', 'error'); btn.disabled=false; btn.innerHTML=txt; }
         });
 
-        window.logoutSession = function() {
-            sessionStorage.removeItem('itsc_token');
-            sessionStorage.removeItem('itsc_user_data');
-            window.currentUser = null;
-            if(socket) socket.disconnect();
-            location.reload();
-        };
+        window.logoutSession = function() { sessionStorage.clear(); location.reload(); };
 
         // ==========================================
-        // VIDEOTECA DB Y REPRODUCTOR PRINCIPAL
+        // SISTEMA DE NAVEGACIÓN ACTUALIZADO (APP MODE)
         // ==========================================
-        function getExternalVideoData(url) {
-            if (!url) return null;
-            let ytId = null;
-            if(url.includes('v=')) ytId = url.split('v=')[1].split('&')[0];
-            else if(url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
-            else if(url.includes('shorts/')) ytId = url.split('shorts/')[1].split('?')[0];
-            if (ytId) return { type: 'youtube', id: ytId };
-            return null;
-        }
-
-        window.selectVideo = function(videoId) {
-            const v = window.videosData.find(item => item.id === videoId);
-            if (!v) return;
-            
-            const iframe = document.getElementById('main-video-iframe');
-            const localVid = document.getElementById('main-local-video');
-
-            if (v.isLocal && v.localUrl) {
-                iframe.classList.add('hidden');
-                iframe.src = '';
-                localVid.classList.remove('hidden');
-                localVid.src = v.localUrl;
-                localVid.play().catch(e => console.warn("Autoplay bloqueado", e));
-            } else {
-                localVid.classList.add('hidden');
-                localVid.pause();
-                localVid.src = ''; 
-                iframe.classList.remove('hidden');
-                
-                iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(v.videoId)}?autoplay=0&rel=0`;
-            }
-            
-            document.getElementById('main-video-tag').textContent = v.tag;
-            document.getElementById('main-video-title').textContent = v.title;
-        };
-
-        window.fetchVideosFromAPI = async function(query = '') {
-            const playlist = document.getElementById('videos-playlist');
-            if (!playlist) return;
-            playlist.innerHTML = `<div class="p-6 text-center text-xs text-gray-500"><i class="fa-solid fa-spinner fa-spin text-3xl text-brand mb-2"></i><br>Buscando videos oficiales en la DB Mundial...</div>`;
-
-            try {
-                const searchQuery = query.trim() !== '' ? query : 'chicken'; 
-                const response = await fetch(`${API_BASE_URL}/search.php?s=${encodeURIComponent(searchQuery)}`);
-                const data = await response.json();
-                
-                const mealsWithVideos = (data.meals || []).filter(m => m.strYoutube && m.strYoutube.trim() !== '');
-
-                let apiVideos = mealsWithVideos.map(m => {
-                    const videoData = getExternalVideoData(m.strYoutube);
-                    return {
-                        id: 'yt_' + m.idMeal,
-                        title: traducirTexto(m.strMeal),
-                        tag: traducirTexto(m.strArea) + ' • ' + traducirTexto(m.strCategory),
-                        videoId: videoData ? videoData.id : null,
-                        type: 'youtube',
-                        desc: 'Extraída de la API Mundial de Gastronomía.',
-                        isLocal: false
-                    };
-                }).filter(v => v.videoId);
-
-                const filteredStudent = query.trim() !== '' 
-                    ? window.studentVideos.filter(v => v.title.toLowerCase().includes(query.toLowerCase()))
-                    : window.studentVideos;
-
-                window.videosData = [...filteredStudent, ...apiVideos];
-                
-                if (window.videosData.length === 0) {
-                    playlist.innerHTML = `<div class="p-6 text-center text-xs text-gray-500 font-bold">No se encontraron videos reproducibles.</div>`;
-                    document.getElementById('main-video-iframe').classList.add('hidden');
-                } else {
-                    renderVideosPlaylist();
-                    selectVideo(window.videosData[0].id);
-                }
-            } catch (err) {}
-        };
-
-        window.renderVideosPlaylist = function() {
-            const playlist = document.getElementById('videos-playlist');
-            if (!playlist) return;
-            playlist.innerHTML = window.videosData.map(v => {
-                let iconClass = 'fa-youtube text-[15px]';
-                if(v.isLocal) iconClass = 'fa-play';
-                return `
-                <div onclick="selectVideo('${v.id}')" class="p-3 rounded-2xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition flex items-center gap-3 group shadow-sm">
-                    <div class="w-10 h-10 rounded-xl ${v.isLocal ? 'bg-emerald-100 text-emerald-600' : 'bg-brand/20 text-brand'} flex items-center justify-center shrink-0 font-bold text-xs group-hover:bg-brand group-hover:text-white transition">
-                        <i class="fa-brands ${iconClass}"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-gray-900 truncate group-hover:text-brand transition">${escapeHTML(v.title)}</p>
-                        <p class="text-[10px] ${v.isLocal ? 'text-emerald-700 font-bold' : 'text-gray-500'}">${escapeHTML(v.tag)}</p>
-                    </div>
-                </div>
-            `}).join('');
-        };
-
-        document.getElementById('form-upload-video')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-upload');
-            const originalText = btn.innerText;
-            try {
-                btn.innerText = "Guardando...";
-                const res = await fetch(`${API_URL}/videos/upload`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        title: document.getElementById('up-title').value.trim(), 
-                        desc: document.getElementById('up-desc').value.trim(), 
-                        url: document.getElementById('up-url').value.trim(), 
-                        author: window.currentUser.name 
-                    })
-                });
-                if(!res.ok) throw new Error('Error de servidor');
-                await fetchLocalVideos(); fetchVideosFromAPI('');
-                closeUploadVideoModal();
-                showToast('Video subido', 'success');
-            } catch (err) { showToast('Error al conectar', 'error'); } finally { btn.innerText = originalText; }
-        });
-
-        window.fetchLocalVideos = async function() {
-            try {
-                const res = await fetch(`${API_URL}/videos`);
-                if(res.ok) window.studentVideos = await res.json();
-            } catch (e) { window.studentVideos = []; }
-        };
-
         window.navigateTo = function(viewId) {
             window.currentActiveView = viewId;
+            // Ocultar/Mostrar Vistas
             ['inicio', 'cursos', 'recetas', 'videos', 'foro', 'config'].forEach(v => { document.getElementById(`view-${v}`)?.classList.toggle('hidden', v !== viewId); });
+            
+            // Actualizar botones Bottom Nav (Móvil)
+            document.querySelectorAll('.nav-btn-mobile').forEach(btn => {
+                const isTarget = btn.getAttribute('data-view') === viewId;
+                btn.className = isTarget ? 'nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-brand' : 'nav-btn-mobile flex flex-col items-center justify-center p-2.5 w-16 text-gray-400 hover:text-gray-900 transition';
+            });
+
+            // Actualizar botones Sidebar (Escritorio)
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 const isTarget = btn.getAttribute('data-view') === viewId;
                 btn.className = isTarget ? 'nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition bg-brand text-white shadow-md' : 'nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition';
             });
-            const globSearch = document.getElementById('global-search');
-            if (globSearch) {
-                if (viewId === 'videos') { globSearch.placeholder = "Busca videos en la DB (Ej. Pollo)..."; } else { globSearch.placeholder = "Busca Mangú, Postres o cualquier receta..."; }
-            }
+            
             if (viewId === 'recetas' && document.getElementById('recetas-list').innerHTML.includes('Conectando')) loadDatabaseCategory('Dessert');
         };
 
-        window.toggleMobileSidebar = function() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebar-backdrop').classList.toggle('hidden'); };
         window.closeAuthModal = function() { document.getElementById('auth-modal').classList.add('hidden'); };
         window.toggleAuthView = function(view) { ['login', 'register', 'recover', 'email-sent'].forEach(v => document.getElementById(`auth-view-${v}`)?.classList.toggle('hidden', v !== view)); };
         window.openUploadVideoModal = function() { document.getElementById('upload-video-modal').classList.remove('hidden'); document.getElementById('upload-video-modal').classList.add('flex');};
         window.closeUploadVideoModal = function() { document.getElementById('upload-video-modal').classList.add('hidden'); document.getElementById('upload-video-modal').classList.remove('flex');};
         
         let searchTimeout;
-        const searchInput = document.getElementById('global-search');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const val = e.target.value; 
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    if (window.currentActiveView === 'videos') { /* Lógica extra */ }
-                    else { if (window.currentActiveView !== 'recetas') navigateTo('recetas'); fetchGlobalSearch(val.trim()); }
-                }, 600);
-            });
-        }
+        document.getElementById('global-search')?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { if (window.currentActiveView !== 'recetas') navigateTo('recetas'); fetchGlobalSearch(e.target.value.trim()); }, 600);
+        });
 
-        // ==========================================
-        // INICIO DE LA APLICACIÓN
-        // ==========================================
         (async function initApp() {
-            initDatabaseCategories();
-            renderReels();
-            renderTutorials();
-            
+            initDatabaseCategories(); renderReels(); renderTutorials();
             const rc = document.getElementById('dashboard-recent-recipes');
-            if (rc) rc.innerHTML = mockDominicanKoreanDB.map(r => `<div onclick="openRecipeModalDB('${r.idMeal}')" class="group cursor-pointer text-center space-y-2"><div class="overflow-hidden rounded-2xl h-28 border border-gray-100"><img src="${r.strMealThumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><p class="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-brand">${r.strMeal}</p></div>`).join('');
+            if (rc) rc.innerHTML = mockLocalDB.map(r => `<div onclick="openRecipeModalDB('${r.idMeal}')" class="text-center bg-gray-50 rounded-2xl overflow-hidden active:scale-95 transition-transform"><div class="h-20"><img src="${r.strMealThumb}" class="w-full h-full object-cover"></div><p class="text-[10px] font-bold py-1 text-gray-800 truncate px-1">${r.strMeal}</p></div>`).join('');
+            
+            try { const res = await fetch(`${API_URL}/videos`); if(res.ok) window.studentVideos = await res.json(); } catch(e){}
+            fetchVideosFromAPI();
 
-            await fetchLocalVideos();
-
-            if (window.currentUser) {
-                updateUIWithUser();
-                initRealtimeConnection();
-                closeAuthModal();
-                navigateTo('inicio');
-            } else {
-                document.getElementById('auth-modal').classList.remove('hidden');
-            }
+            if (window.currentUser) { updateUIWithUser(); initRealtimeConnection(); closeAuthModal(); navigateTo('inicio'); } 
+            else { document.getElementById('auth-modal').classList.remove('hidden'); }
         })();
     </script>
 </body>
