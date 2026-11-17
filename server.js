@@ -190,6 +190,55 @@ io.on('connection', (socket) => {
     });
 });
 
+// ==========================================
+// RUTAS DE ADMINISTRACIÓN (PANEL DE CONTROL)
+// ==========================================
+
+// 1. Middleware de seguridad: Verifica que la petición venga del Admin
+const verifyAdmin = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    // Validamos el token que definimos en admin.html
+    if (authHeader === 'Bearer simulated_token_123') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Acceso denegado. Token de administrador inválido o ausente.' });
+    }
+};
+
+// 2. Ruta para obtener todos los estudiantes (GET)
+app.get('/api/admin/users', verifyAdmin, (req, res) => {
+    // Busca en la tabla de usuarios (adaptado por si tu tabla se llama 'usuarios' o 'users')
+    const query = "SELECT name, email, usuario FROM usuarios";
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            // Plan de contingencia si la tabla se llama 'users' en inglés
+            db.all("SELECT name, email, usuario FROM users", [], (err2, rows2) => {
+                if (err2) return res.status(500).json({ error: 'Error al leer la base de datos' });
+                res.json(rows2);
+            });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+// 3. Ruta para eliminar un estudiante (DELETE)
+app.delete('/api/admin/users/:usuario', verifyAdmin, (req, res) => {
+    const username = req.params.usuario;
+    const query = "DELETE FROM usuarios WHERE usuario = ?";
+    
+    db.run(query, [username], function(err) {
+        if (err) {
+            db.run("DELETE FROM users WHERE usuario = ?", [username], function(err2) {
+                if (err2) return res.status(500).json({ error: 'Error al eliminar' });
+                res.json({ message: 'Estudiante eliminado exitosamente' });
+            });
+        } else {
+            res.json({ message: 'Estudiante eliminado exitosamente' });
+        }
+    });
+});
+
 // Inicializar Servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
