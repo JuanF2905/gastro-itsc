@@ -1,203 +1,109 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITSC Admin - Panel de Control</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { brand: '#F59E0B' }
-                }
-            }
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #09090b; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-    </style>
-</head>
-<body class="bg-zinc-950 text-zinc-300 font-sans h-screen overflow-hidden flex select-none">
+<!-- AJUSTES (Interruptores en la Nube) -->
+            <section id="view-ajustes" class="hidden space-y-6">
+                <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+                    <h4 class="text-brand font-bold text-sm mb-5"><i class="fa-solid fa-server mr-2"></i> Control Global de la Plataforma</h4>
+                    <p class="text-xs text-zinc-500 mb-6">Apaga o enciende secciones. Estos cambios se guardan en el servidor y afectan instantáneamente a todos los dispositivos.</p>
+                    
+                    <div class="space-y-4 max-w-md">
+                        <!-- Interruptor 1: Foro -->
+                        <div class="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                            <div><p class="font-bold text-white text-sm">Módulo de Foro y Chat</p></div>
+                            <input type="checkbox" id="toggle-foro" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-brand"/>
+                        </div>
+                        
+                        <!-- Interruptor 2: Videoteca -->
+                        <div class="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                            <div><p class="font-bold text-white text-sm">Módulo de Videoteca</p></div>
+                            <input type="checkbox" id="toggle-videos" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-brand"/>
+                        </div>
 
-    <!-- LOGIN DE ADMINISTRADOR -->
-    <div id="admin-login-modal" class="fixed inset-0 z-50 bg-zinc-950 flex items-center justify-center p-4">
-        <div class="bg-zinc-900 rounded-2xl max-w-sm w-full p-8 border border-zinc-800 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-zinc-800 text-brand rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-lock"></i></div>
-            <h2 class="text-xl font-bold text-white mb-6">Acceso Restringido</h2>
-            <form id="admin-login-form" class="space-y-4">
-                <input type="password" id="admin-key" required placeholder="Clave maestra de administrador" class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-brand text-white text-center tracking-widest">
-                <button type="submit" class="w-full py-3 bg-brand text-zinc-950 font-bold rounded-xl hover:bg-yellow-400 transition">Desbloquear Panel</button>
-            </form>
-        </div>
-    </div>
+                        <!-- Interruptor 3: Cursos -->
+                        <div class="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                            <div><p class="font-bold text-white text-sm">Módulo de Academia</p></div>
+                            <input type="checkbox" id="toggle-cursos" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-brand"/>
+                        </div>
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
-        <div class="p-6 border-b border-zinc-800 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand"><i class="fa-solid fa-server"></i></div>
-            <div>
-                <h1 class="font-bold text-white leading-tight">Admin<span class="text-brand">Panel</span></h1>
-                <p class="text-[10px] text-zinc-500 uppercase tracking-wider">ITSC Gastronomía</p>
-            </div>
-        </div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="navAdmin('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 bg-brand text-zinc-950 font-bold rounded-xl text-sm transition"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</button>
-            <button onclick="navAdmin('usuarios')" id="nav-usuarios" class="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium rounded-xl text-sm transition"><i class="fa-solid fa-users w-5"></i> Gestión de Usuarios</button>
-            <button onclick="navAdmin('recetas')" id="nav-recetas" class="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium rounded-xl text-sm transition"><i class="fa-solid fa-book-journal-whills w-5"></i> Contenido Local</button>
-        </nav>
-        <div class="p-4 border-t border-zinc-800">
-            <button onclick="location.reload()" class="w-full py-2.5 text-xs font-bold text-red-400 hover:bg-red-500/10 rounded-lg transition border border-red-500/20"><i class="fa-solid fa-right-from-bracket mr-2"></i>Cerrar Sesión</button>
-        </div>
-    </aside>
-
-    <!-- CONTENT -->
-    <main class="flex-1 flex flex-col h-full bg-zinc-950 overflow-hidden relative">
-        <header class="h-16 border-b border-zinc-800 flex items-center justify-between px-8 bg-zinc-900/50">
-            <h2 id="header-title" class="text-lg font-bold text-white">Dashboard General</h2>
-            <div class="flex items-center gap-3">
-                <span class="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sistema En Línea</span>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            <!-- VISTA: DASHBOARD -->
-            <section id="view-dashboard" class="space-y-6">
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
-                        <div><p class="text-xs text-zinc-500 font-bold uppercase">Usuarios Registrados</p><p class="text-3xl font-extrabold text-white" id="stat-users">0</p></div>
+                        <!-- Interruptor 4: NUEVO - REGISTRO -->
+                        <div class="flex items-center justify-between p-4 bg-red-950/20 border border-red-900/30 rounded-xl">
+                            <div><p class="font-bold text-white text-sm">Permitir Nuevos Registros</p><p class="text-[10px] text-zinc-500">Si lo apagas, nadie podrá crear cuentas nuevas.</p></div>
+                            <input type="checkbox" id="toggle-registro" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-red-500"/>
+                        </div>
                     </div>
-                    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xl"><i class="fa-solid fa-book"></i></div>
-                        <div><p class="text-xs text-zinc-500 font-bold uppercase">Recetas DB Local</p><p class="text-3xl font-extrabold text-white" id="stat-recipes">0</p></div>
-                    </div>
-                    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl"><i class="fa-solid fa-video"></i></div>
-                        <div><p class="text-xs text-zinc-500 font-bold uppercase">Prácticas Subidas</p><p class="text-3xl font-extrabold text-white" id="stat-videos">0</p></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VISTA: USUARIOS -->
-            <section id="view-usuarios" class="hidden space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-white font-bold">Listado de Estudiantes</h3>
-                    <button class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-lg border border-zinc-700 transition" onclick="loadAdminUsers()"><i class="fa-solid fa-rotate-right mr-1"></i> Refrescar</button>
-                </div>
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-                    <table class="w-full text-left text-sm text-zinc-400">
-                        <thead class="bg-zinc-950/50 text-xs uppercase font-bold text-zinc-500 border-b border-zinc-800">
-                            <tr><th class="px-6 py-4">Usuario</th><th class="px-6 py-4">Nombre Completo</th><th class="px-6 py-4">Correo</th><th class="px-6 py-4 text-right">Acciones</th></tr>
-                        </thead>
-                        <tbody id="admin-users-table" class="divide-y divide-zinc-800">
-                            <!-- Los usuarios cargarán aquí -->
-                            <tr><td colspan="4" class="px-6 py-8 text-center"><i class="fa-solid fa-spinner fa-spin text-brand mr-2"></i>Cargando usuarios desde la base de datos...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- VISTA: RECETAS -->
-            <section id="view-recetas" class="hidden space-y-4">
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center">
-                    <i class="fa-solid fa-screwdriver-wrench text-4xl text-zinc-600 mb-4"></i>
-                    <h3 class="text-white font-bold text-lg">Gestor de Recetas en Construcción</h3>
-                    <p class="text-sm text-zinc-500 mt-2">Aquí podrás agregar recetas directamente a la base de datos de Render.</p>
                 </div>
             </section>
         </div>
     </main>
 
     <script>
-        const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://127.0.0.1:3000' 
-            : 'https://gastro-backend-3tgk.onrender.com';
-        
+        const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:3000' : 'https://gastro-backend-3tgk.onrender.com';
         let adminToken = '';
 
-        // Sistema de Pestañas
         function navAdmin(viewId) {
-            ['dashboard', 'usuarios', 'recetas'].forEach(v => {
-                document.getElementById(`view-${v}`).classList.add('hidden');
-                document.getElementById(`nav-${v}`).className = 'w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium rounded-xl text-sm transition';
+            ['dashboard', 'usuarios', 'recetas', 'videos', 'ajustes'].forEach(v => {
+                document.getElementById(`view-${v}`)?.classList.add('hidden');
+                document.getElementById(`nav-${v}`)?.classList.replace('bg-brand', 'text-zinc-400');
+                document.getElementById(`nav-${v}`)?.classList.replace('text-zinc-950', 'hover:text-white');
             });
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            document.getElementById(`nav-${viewId}`).className = 'w-full flex items-center gap-3 px-4 py-3 bg-brand text-zinc-950 font-bold rounded-xl text-sm transition';
+            document.getElementById(`view-${viewId}`)?.classList.remove('hidden');
+            document.getElementById(`nav-${viewId}`)?.classList.replace('text-zinc-400', 'bg-brand');
+            document.getElementById(`nav-${viewId}`)?.classList.replace('hover:text-white', 'text-zinc-950');
             
-            const titles = { 'dashboard': 'Dashboard General', 'usuarios': 'Control de Usuarios', 'recetas': 'Gestor de Contenido' };
-            document.getElementById('header-title').textContent = titles[viewId];
-
             if(viewId === 'usuarios') loadAdminUsers();
         }
 
-        // Login Falso
         document.getElementById('admin-login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const key = document.getElementById('admin-key').value;
-            // Clave temporal para pruebas: admin123
-            if(key === 'admin123') {
+            if(document.getElementById('admin-key').value === 'admin123') {
                 document.getElementById('admin-login-modal').classList.add('hidden');
                 adminToken = 'simulated_token_123';
-            } else {
-                alert("Clave incorrecta. Solo administradores autorizados.");
-            }
+                loadAppModules(); // Descarga la configuración de Render
+            } else { alert("Clave incorrecta."); }
         });
 
-        // Cargar Usuarios
-        async function loadAdminUsers() {
-            const table = document.getElementById('admin-users-table');
-            table.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center"><i class="fa-solid fa-spinner fa-spin text-brand mr-2"></i>Consultando a Render...</td></tr>`;
+        // ===============================================
+        // CONEXIÓN DE MÓDULOS CON LA NUBE (RENDER)
+        // ===============================================
+        async function loadAppModules() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/settings`);
+                const config = await res.json();
+                
+                // Actualiza los botones visualmente según la base de datos (1 es true, 0 es false)
+                document.getElementById('toggle-foro').checked = config.foro === 1;
+                document.getElementById('toggle-videos').checked = config.videos === 1;
+                document.getElementById('toggle-cursos').checked = config.cursos === 1;
+                document.getElementById('toggle-registro').checked = config.registro === 1;
+            } catch(e) { console.log("Error cargando módulos"); }
+        }
+
+        async function saveAppModules() {
+            const config = {
+                foro: document.getElementById('toggle-foro').checked,
+                videos: document.getElementById('toggle-videos').checked,
+                cursos: document.getElementById('toggle-cursos').checked,
+                registro: document.getElementById('toggle-registro').checked
+            };
             
             try {
-                const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                const res = await fetch(`${BACKEND_URL}/api/settings`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(config)
                 });
-                if(!res.ok) throw new Error("Ruta de administrador no disponible aún en el backend");
-                const data = await res.json();
-                
-                document.getElementById('stat-users').textContent = data.length;
-
-                table.innerHTML = data.map(u => `
-                    <tr class="hover:bg-zinc-800/50 transition">
-                        <td class="px-6 py-4 font-mono text-xs text-brand">@${u.usuario}</td>
-                        <td class="px-6 py-4 text-white font-medium">${u.name}</td>
-                        <td class="px-6 py-4 text-zinc-500 text-xs">${u.email}</td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="deleteUser('${u.usuario}')" class="px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition border border-red-500/20"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch(e) {
-                table.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-zinc-500 text-sm"><i class="fa-solid fa-triangle-exclamation text-yellow-500 text-2xl mb-2 block"></i><br>Debemos configurar el archivo server.js para habilitar esta vista.<br>${e.message}</td></tr>`;
-            }
+                if(!res.ok) throw new Error("Fallo");
+                // Mostrar pequeña notificación de guardado
+                const btn = document.getElementById('header-title');
+                const old = btn.innerHTML;
+                btn.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-cloud-arrow-up"></i> Guardado en la Nube</span>`;
+                setTimeout(() => btn.innerHTML = old, 2000);
+            } catch (error) { alert("Error al guardar en el servidor"); }
         }
 
-        // AQUÍ ESTÁ LA NUEVA FUNCIÓN AÑADIDA
-        async function deleteUser(username) {
-            if(confirm(`¿Estás seguro de que deseas eliminar permanentemente al estudiante @${username}?`)) {
-                try {
-                    const res = await fetch(`${BACKEND_URL}/api/admin/users/${username}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${adminToken}` }
-                    });
-                    
-                    if(!res.ok) throw new Error("Error al eliminar en el servidor");
-                    
-                    // Si se elimina correctamente, recargamos la tabla visualmente
-                    loadAdminUsers();
-                } catch(e) {
-                    alert("Hubo un problema al intentar eliminar al usuario: " + e.message);
-                }
-            }
-        }
+        async function loadAdminUsers() { /* ... Tu código de usuarios igual que antes ... */ }
+        async function deleteUser(username) { /* ... Tu código de eliminar igual que antes ... */ }
     </script>
 </body>
 </html>

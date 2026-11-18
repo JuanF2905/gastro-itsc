@@ -25,23 +25,55 @@ const db = new sqlite3.Database('./gastronomia.db', (err) => {
 });
 
 // Crear tablas relacionales si no existen
+// OBLIGAR A RENDER A RECONSTRUIR TABLAS SI SE BORRA POR INACTIVIDAD
 db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS users (
+    // 1. Tabla de Usuarios
+    db.run(`CREATE TABLE IF NOT EXISTS usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT UNIQUE,
-        usuario TEXT UNIQUE,
-        password TEXT
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        usuario TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS videos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        desc TEXT,
-        url TEXT,
-        author TEXT,
-        type TEXT DEFAULT 'youtube'
-    )`);
+    // 2. NUEVA: Tabla de Configuración (Para los interruptores del Admin)
+    db.run(`CREATE TABLE IF NOT EXISTS configuracion (
+        id INTEGER PRIMARY KEY,
+        foro BOOLEAN,
+        videos BOOLEAN,
+        cursos BOOLEAN,
+        registro BOOLEAN
+    )`, () => {
+        // Si la tabla está vacía, encendemos todos los módulos por defecto (1 = true)
+        db.get("SELECT * FROM configuracion WHERE id = 1", (err, row) => {
+            if (!row) {
+                db.run("INSERT INTO configuracion (id, foro, videos, cursos, registro) VALUES (1, 1, 1, 1, 1)");
+            }
+        });
+    });
+});
+
+// ==========================================
+// RUTAS DE CONFIGURACIÓN GLOBAL (NUBE)
+// ==========================================
+// A. Leer la configuración (Lo usan los estudiantes al abrir la app)
+app.get('/api/settings', (req, res) => {
+    db.get("SELECT * FROM configuracion WHERE id = 1", (err, row) => {
+        if (err || !row) return res.json({ foro: 1, videos: 1, cursos: 1, registro: 1 });
+        res.json(row);
+    });
+});
+
+// B. Guardar la configuración (Lo usa el Admin al mover los interruptores)
+app.put('/api/settings', verifyAdmin, (req, res) => {
+    const { foro, videos, cursos, registro } = req.body;
+    db.run("UPDATE configuracion SET foro = ?, videos = ?, cursos = ?, registro = ? WHERE id = 1", 
+        [foro ? 1 : 0, videos ? 1 : 0, cursos ? 1 : 0, registro ? 1 : 0], 
+        (err) => {
+            if(err) return res.status(500).json({error: 'Error guardando configuraciones'});
+            res.json({message: 'Módulos actualizados en toda la plataforma'});
+        }
+    );
 });
 
 // Variables en memoria solo para el chat en vivo
