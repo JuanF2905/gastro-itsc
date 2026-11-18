@@ -10,7 +10,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     
     <title>ITSC Gastronomía - Plataforma</title>
-    <link rel="icon" type="image/png" href="logo-itsc.png">
+    <link rel="icon" type="image/jpeg" href="logo-itsc.png">
     <link rel="apple-touch-icon" href="logo-itsc.png">
     
     <!-- TAILWIND CDN -->
@@ -629,6 +629,50 @@
         };
         window.closeRecipeModal = function() { document.getElementById('recipe-modal').classList.add('hidden'); document.getElementById('recipe-modal').classList.remove('flex'); };
 
+        // ==========================================
+        // CARGA DE SHORTS Y TUTORIALES DESDE SUPABASE
+        // ==========================================
+        function extractYouTubeId(url) {
+            if (!url) return '';
+            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            return match ? match[1] : '';
+        }
+
+        async function loadAdminMediosForStudents() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/medios`);
+                if (!res.ok) return;
+                const medios = await res.json();
+
+                medios.forEach(m => {
+                    const ytId = extractYouTubeId(m.url);
+                    if (!ytId) return;
+                    const thumb = m.img || `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+
+                    if (m.tipo === 'short') {
+                        reelsData.unshift({
+                            id: 'db_reel_' + m.id,
+                            title: m.title,
+                            author: m.tag || '@ITSC',
+                            img: thumb,
+                            videoId: ytId
+                        });
+                    } else {
+                        tutorialesData.unshift({
+                            id: 'db_tut_' + m.id,
+                            title: m.title,
+                            duration: 'Clase',
+                            img: thumb,
+                            tag: m.tag || 'ITSC',
+                            videoId: ytId
+                        });
+                    }
+                });
+            } catch (e) {
+                console.log("No se pudieron cargar los medios del admin.");
+            }
+        }
+
         const tutorialesData = [
             { id: 'tut1', title: 'Fondos Básicos', duration: '12 min', img: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80', tag: 'Básico', videoId: 'aqz-KE-bpKQ' },
             { id: 'tut2', title: 'Cortes de Vegetales', duration: '15 min', img: 'https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&w=600&q=80', tag: 'Técnica', videoId: 'dQw4w9WgXcQ' },
@@ -641,8 +685,8 @@
             if(container) {
                 container.innerHTML = tutorialesData.map(tut => `
                     <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md cursor-pointer group active:scale-95 transition-transform" onclick="playTutorial('${tut.id}')">
-                        <div class="relative h-24 sm:h-28 lg:h-32 overflow-hidden"><img src="${tut.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"><div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition flex items-center justify-center"><i class="fa-solid fa-play text-white text-xl lg:text-3xl opacity-0 group-hover:opacity-100 transition"></i></div></div>
-                        <div class="p-2 lg:p-3"><span class="text-[8px] lg:text-[9px] font-extrabold text-brand uppercase">${tut.tag}</span><h4 class="font-bold text-gray-900 text-xs lg:text-sm leading-tight line-clamp-1 lg:line-clamp-2">${tut.title}</h4></div>
+                        <div class="relative h-24 sm:h-28 lg:h-32 overflow-hidden"><img src="${escapeHTML(tut.img)}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"><div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition flex items-center justify-center"><i class="fa-solid fa-play text-white text-xl lg:text-3xl opacity-0 group-hover:opacity-100 transition"></i></div></div>
+                        <div class="p-2 lg:p-3"><span class="text-[8px] lg:text-[9px] font-extrabold text-brand uppercase">${escapeHTML(tut.tag)}</span><h4 class="font-bold text-gray-900 text-xs lg:text-sm leading-tight line-clamp-1 lg:line-clamp-2">${escapeHTML(tut.title)}</h4></div>
                     </div>
                 `).join('');
             }
@@ -680,6 +724,7 @@
             const reel = reelsData.find(r => r.id === id); if(!reel) return;
             const iframe = document.getElementById('reels-iframe');
             iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(reel.videoId)}?autoplay=1&rel=0&controls=0&modestbranding=1`;
+            document.getElementById('reels-author').textContent = reel.author;
             document.getElementById('reels-title').textContent = reel.title;
             document.getElementById('reels-modal').classList.remove('hidden'); document.getElementById('reels-modal').classList.add('flex');
         };
@@ -808,7 +853,8 @@
             // 1. Revisar restricciones del administrador en la nube
             await checkAdminRestrictions();
 
-            // 2. Cargar contenido inicial
+            // 2. Cargar contenido inicial (incluyendo Shorts y Tutoriales del Admin)
+            await loadAdminMediosForStudents();
             initDatabaseCategories(); renderReels(); renderTutorials();
             const rc = document.getElementById('dashboard-recent-recipes');
             if (rc) rc.innerHTML = mockLocalDB.map(r => `<div onclick="openRecipeModalDB('${r.idMeal}')" class="text-center bg-gray-50 hover:bg-gray-100 cursor-pointer rounded-2xl overflow-hidden active:scale-95 transition-transform"><div class="h-20 lg:h-24"><img src="${r.strMealThumb}" class="w-full h-full object-cover"></div><p class="text-[10px] lg:text-xs font-bold py-1 lg:py-2 text-gray-800 truncate px-1">${r.strMeal}</p></div>`).join('');

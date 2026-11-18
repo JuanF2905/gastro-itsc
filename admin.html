@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITSC Admin - Panel de Control</title>
-    <link rel="icon" type="image/jpeg" href="logo-itsc.png">
+    <link rel="icon" type="image/jpeg" href="logo-itsc.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
     <div id="admin-login-modal" class="fixed inset-0 z-50 bg-zinc-950 flex items-center justify-center p-4">
         <div class="bg-zinc-900 rounded-2xl max-w-sm w-full p-8 border border-zinc-800 shadow-2xl text-center">
             <div class="w-20 h-20 bg-white rounded-2xl p-2 flex items-center justify-center mx-auto mb-4 shadow-md">
-                <img src="logo-itsc.png" alt="Logo ITSC" class="w-full h-full object-contain">
+                <img src="logo-itsc.jpg" alt="Logo ITSC" class="w-full h-full object-contain">
             </div>
             <h2 class="text-xl font-bold text-white mb-1">Acceso Restringido</h2>
             <p class="text-xs text-zinc-500 mb-6">Panel de Administración ITSC</p>
@@ -47,7 +47,7 @@
     <aside class="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
         <div class="p-6 border-b border-zinc-800 flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shrink-0">
-                <img src="logo-itsc.png" alt="Logo ITSC" class="w-full h-full object-contain">
+                <img src="logo-itsc.jpg" alt="Logo ITSC" class="w-full h-full object-contain">
             </div>
             <div>
                 <h1 class="font-bold text-white leading-tight">Admin<span class="text-brand">Panel</span></h1>
@@ -62,6 +62,9 @@
             <p class="text-[10px] font-bold text-zinc-600 uppercase tracking-wider pt-4 pb-2 px-4">Gestión</p>
             <button onclick="navAdmin('usuarios')" id="nav-usuarios" class="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium rounded-xl text-sm transition">
                 <i class="fa-solid fa-users w-5"></i> Estudiantes
+            </button>
+            <button onclick="navAdmin('medios')" id="nav-medios" class="w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium rounded-xl text-sm transition">
+                <i class="fa-solid fa-clapperboard w-5"></i> Videos y Shorts
             </button>
             
             <p class="text-[10px] font-bold text-zinc-600 uppercase tracking-wider pt-4 pb-2 px-4">Sistema</p>
@@ -98,6 +101,15 @@
                             <p class="text-3xl font-extrabold text-white" id="stat-users">0</p>
                         </div>
                     </div>
+                    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xl shrink-0">
+                            <i class="fa-solid fa-clapperboard"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-zinc-500 font-bold uppercase">Shorts y Tutoriales</p>
+                            <p class="text-3xl font-extrabold text-white" id="stat-medios">0</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -126,6 +138,70 @@
                 </div>
             </section>
 
+            <!-- VISTA: VIDEOS Y SHORTS -->
+            <section id="view-medios" class="hidden space-y-6">
+                <!-- Formulario de Subida -->
+                <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+                    <h4 class="text-brand font-bold text-sm mb-4"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Publicar Nuevo Short o Tutorial</h4>
+                    <form id="form-add-medio" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Título</label>
+                            <input type="text" id="medio-title" required placeholder="Ej. Técnicas de Corte Juliana" class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-brand">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Tipo de Contenido</label>
+                            <select id="medio-tipo" class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-brand">
+                                <option value="tutorial">Video Tutorial (Academia / Videoteca)</option>
+                                <option value="short">Short / Reel Vertical (Inicio)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Enlace de YouTube o Short</label>
+                            <input type="url" id="medio-url" required placeholder="https://www.youtube.com/watch?v=... o /shorts/..." class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-brand">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Etiqueta o Autor</label>
+                            <input type="text" id="medio-tag" placeholder="Ej. Técnica, RD, @ChefITSC" class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-brand">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] uppercase font-bold text-zinc-500 mb-1">URL de Miniatura (Opcional - se genera sola si se deja vacía)</label>
+                            <input type="url" id="medio-img" placeholder="https://..." class="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-brand">
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" id="btn-save-medio" class="px-6 py-3 bg-brand hover:bg-yellow-400 text-zinc-950 font-bold text-xs rounded-xl transition shadow-lg shadow-brand/10">
+                                <i class="fa-solid fa-plus mr-1"></i> Publicar en la Plataforma
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabla de Medios Publicados -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-white font-bold">Contenido Publicado</h3>
+                        <button onclick="loadAdminMedios()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-lg border border-zinc-700 transition">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Refrescar
+                        </button>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+                        <table class="w-full text-left text-sm text-zinc-400">
+                            <thead class="bg-zinc-950/50 text-xs uppercase font-bold text-zinc-500 border-b border-zinc-800">
+                                <tr>
+                                    <th class="px-6 py-4">Miniatura</th>
+                                    <th class="px-6 py-4">Título</th>
+                                    <th class="px-6 py-4">Tipo</th>
+                                    <th class="px-6 py-4">Etiqueta</th>
+                                    <th class="px-6 py-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-medios-table" class="divide-y divide-zinc-800">
+                                <tr><td colspan="5" class="px-6 py-8 text-center text-zinc-500">Cargando contenido...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- VISTA: AJUSTES (Interruptores en la Nube) -->
             <section id="view-ajustes" class="hidden space-y-6">
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
@@ -133,7 +209,6 @@
                     <p class="text-xs text-zinc-500 mb-6">Apaga o enciende secciones. Estos cambios se guardan en el servidor y afectan instantáneamente a todos los dispositivos.</p>
                     
                     <div class="space-y-4 max-w-md">
-                        <!-- Interruptor 1: Foro -->
                         <div class="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
                             <div>
                                 <p class="font-bold text-white text-sm">Módulo de Foro y Chat</p>
@@ -141,8 +216,6 @@
                             </div>
                             <input type="checkbox" id="toggle-foro" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-brand"/>
                         </div>
-                        
-                        <!-- Interruptor 2: Videoteca -->
                         <div class="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
                             <div>
                                 <p class="font-bold text-white text-sm">Módulo de Videoteca</p>
@@ -150,8 +223,6 @@
                             </div>
                             <input type="checkbox" id="toggle-videos" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-brand"/>
                         </div>
-
-                        <!-- Interruptor 3: Cursos -->
                         <div class="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
                             <div>
                                 <p class="font-bold text-white text-sm">Módulo de Academia</p>
@@ -159,8 +230,6 @@
                             </div>
                             <input type="checkbox" id="toggle-cursos" onchange="saveAppModules()" class="w-5 h-5 cursor-pointer accent-brand"/>
                         </div>
-
-                        <!-- Interruptor 4: Registro -->
                         <div class="flex items-center justify-between p-4 bg-red-950/20 border border-red-900/30 rounded-xl">
                             <div>
                                 <p class="font-bold text-white text-sm">Permitir Nuevos Registros</p>
@@ -182,7 +251,7 @@
         let adminToken = '';
 
         function navAdmin(viewId) {
-            ['dashboard', 'usuarios', 'ajustes'].forEach(v => {
+            ['dashboard', 'usuarios', 'medios', 'ajustes'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.add('hidden');
                 document.getElementById(`nav-${v}`).className = 'w-full flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium rounded-xl text-sm transition';
             });
@@ -192,11 +261,13 @@
             const titles = {
                 'dashboard': 'Dashboard General',
                 'usuarios': 'Control de Estudiantes',
+                'medios': 'Videos Tutoriales y Shorts',
                 'ajustes': 'Módulos y Ajustes'
             };
             document.getElementById('header-title').textContent = titles[viewId];
 
             if (viewId === 'usuarios') loadAdminUsers();
+            if (viewId === 'medios') loadAdminMedios();
             if (viewId === 'ajustes') loadAppModules();
         }
 
@@ -206,12 +277,114 @@
                 document.getElementById('admin-login-modal').classList.add('hidden');
                 adminToken = 'simulated_token_123';
                 loadAdminUsers();
+                loadAdminMedios();
                 loadAppModules();
             } else {
                 alert("Clave incorrecta. Solo administradores autorizados.");
             }
         });
 
+        // Extraer ID de YouTube (soporta enlaces normales, youtu.be y /shorts/)
+        function extractYouTubeId(url) {
+            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            return match ? match[1] : '';
+        }
+
+        // ===============================================
+        // GESTIÓN DE SHORTS Y TUTORIALES (SUPABASE)
+        // ===============================================
+        document.getElementById('form-add-medio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-medio');
+            btn.disabled = true;
+
+            const url = document.getElementById('medio-url').value.trim();
+            const ytId = extractYouTubeId(url);
+            let img = document.getElementById('medio-img').value.trim();
+            if (!img && ytId) img = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+
+            const payload = {
+                title: document.getElementById('medio-title').value.trim(),
+                tipo: document.getElementById('medio-tipo').value,
+                tag: document.getElementById('medio-tag').value.trim() || 'ITSC',
+                url: url,
+                img: img
+            };
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/admin/medios`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error("No se pudo guardar en el servidor");
+                document.getElementById('form-add-medio').reset();
+                loadAdminMedios();
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        async function loadAdminMedios() {
+            const table = document.getElementById('admin-medios-table');
+            table.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center"><i class="fa-solid fa-spinner fa-spin text-brand mr-2"></i>Cargando desde Supabase...</td></tr>`;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/medios`);
+                if (!res.ok) throw new Error("Error al consultar medios");
+                const data = await res.json();
+                document.getElementById('stat-medios').textContent = data.length;
+
+                if (data.length === 0) {
+                    table.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-zinc-500">Aún no has subido shorts ni tutoriales.</td></tr>`;
+                    return;
+                }
+
+                table.innerHTML = data.map(m => `
+                    <tr class="hover:bg-zinc-800/50 transition">
+                        <td class="px-6 py-3">
+                            <img src="${m.img || 'logo-itsc.jpg'}" class="${m.tipo === 'short' ? 'w-10 h-14' : 'w-16 h-10'} object-cover rounded-lg border border-zinc-700 bg-zinc-800">
+                        </td>
+                        <td class="px-6 py-4 text-white font-medium">${m.title}</td>
+                        <td class="px-6 py-4">
+                            ${m.tipo === 'short' 
+                                ? `<span class="px-2.5 py-1 bg-brand/10 text-brand text-[10px] font-bold rounded border border-brand/20 uppercase">Short</span>` 
+                                : `<span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded border border-blue-500/20 uppercase">Tutorial</span>`}
+                        </td>
+                        <td class="px-6 py-4 text-zinc-400 text-xs">${m.tag || 'ITSC'}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="deleteMedio(${m.id})" class="px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition border border-red-500/20">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                table.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-400 text-sm">${e.message}</td></tr>`;
+            }
+        }
+
+        async function deleteMedio(id) {
+            if (!confirm("¿Eliminar este video permanentemente?")) return;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/admin/medios/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                if (!res.ok) throw new Error("Error al eliminar");
+                loadAdminMedios();
+            } catch (e) {
+                alert("No se pudo eliminar: " + e.message);
+            }
+        }
+
+        // ===============================================
+        // MÓDULOS Y USUARIOS
+        // ===============================================
         async function loadAppModules() {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/settings`);
@@ -220,9 +393,7 @@
                 document.getElementById('toggle-videos').checked = config.videos === 1;
                 document.getElementById('toggle-cursos').checked = config.cursos === 1;
                 document.getElementById('toggle-registro').checked = config.registro === 1;
-            } catch (e) {
-                console.error("Error cargando módulos:", e);
-            }
+            } catch (e) {}
         }
 
         async function saveAppModules() {
@@ -247,7 +418,7 @@
                 title.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Guardado en la Nube</span>`;
                 setTimeout(() => title.innerHTML = old, 2000);
             } catch (error) {
-                alert("Error al guardar en el servidor. Verifica que Render esté encendido.");
+                alert("Error al guardar en el servidor.");
             }
         }
 

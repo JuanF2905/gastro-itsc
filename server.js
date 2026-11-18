@@ -67,13 +67,15 @@ async function initDB() {
         `);
 
         // 3. Tabla de Videos (Prácticas de estudiantes)
+        // 4. Tabla de Medios Oficiales (Shorts y Tutoriales del Admin)
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS videos (
+            CREATE TABLE IF NOT EXISTS medios (
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
-                description TEXT,
+                tipo TEXT NOT NULL,
+                tag TEXT,
                 url TEXT NOT NULL,
-                author TEXT NOT NULL
+                img TEXT
             );
         `);
 
@@ -273,4 +275,37 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`✅ Servidor ITSC activo en puerto ${PORT}`);
     console.log('🔒 Sistema de seguridad Hashing Activado');
+});
+// ==========================================
+// RUTAS DE MEDIOS (SHORTS Y TUTORIALES)
+// ==========================================
+app.get('/api/medios', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM medios ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al leer medios' });
+    }
+});
+
+app.post('/api/admin/medios', verifyAdmin, async (req, res) => {
+    const { title, tipo, tag, url, img } = req.body;
+    try {
+        await pool.query(
+            'INSERT INTO medios (title, tipo, tag, url, img) VALUES ($1, $2, $3, $4, $5)',
+            [title, tipo, tag || 'ITSC', url, img || '']
+        );
+        res.status(201).json({ message: 'Contenido publicado exitosamente' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al guardar en Supabase' });
+    }
+});
+
+app.delete('/api/admin/medios/:id', verifyAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM medios WHERE id = $1', [req.params.id]);
+        res.json({ message: 'Contenido eliminado' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al eliminar contenido' });
+    }
 });
