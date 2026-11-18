@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt'); // NUEVO: Importación para encriptar contraseñas
+const bcrypt = require('bcrypt');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,64 +17,72 @@ const io = new Server(server, { cors: { origin: '*' } });
 const JWT_SECRET = 'itsc_gastro_super_secret_key_2026';
 
 // ==========================================
-// CAPA DE DATOS (DAL): CONFIGURACIÓN SQLITE
+// MIDDLEWARE DE SEGURIDAD (ADMIN)
 // ==========================================
-const db = new sqlite3.Database('./gastronomia.db', (err) => {
-    if (err) console.error('Error conectando a la base de datos:', err.message);
-    else console.log('🗄️ Base de datos SQL conectada (gastronomia.db)');
-});
-
-// Crear tablas relacionales si no existen
-// OBLIGAR A RENDER A RECONSTRUIR TABLAS SI SE BORRA POR INACTIVIDAD
-db.serialize(() => {
-    // 1. Tabla de Usuarios
-    db.run(`CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        usuario TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
-    )`);
-
-    // 2. NUEVA: Tabla de Configuración (Para los interruptores del Admin)
-    db.run(`CREATE TABLE IF NOT EXISTS configuracion (
-        id INTEGER PRIMARY KEY,
-        foro BOOLEAN,
-        videos BOOLEAN,
-        cursos BOOLEAN,
-        registro BOOLEAN
-    )`, () => {
-        // Si la tabla está vacía, encendemos todos los módulos por defecto (1 = true)
-        db.get("SELECT * FROM configuracion WHERE id = 1", (err, row) => {
-            if (!row) {
-                db.run("INSERT INTO configuracion (id, foro, videos, cursos, registro) VALUES (1, 1, 1, 1, 1)");
-            }
-        });
-    });
-});
+const verifyAdmin = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    if (authHeader === 'Bearer simulated_token_123') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Acceso denegado. Token de administrador inválido o ausente.' });
+    }
+};
 
 // ==========================================
-// RUTAS DE CONFIGURACIÓN GLOBAL (NUBE)
+// CAPA DE DATOS (DAL): CONEXIÓN A SUPABASE
 // ==========================================
-// A. Leer la configuración (Lo usan los estudiantes al abrir la app)
-app.get('/api/settings', (req, res) => {
-    db.get("SELECT * FROM configuracion WHERE id = 1", (err, row) => {
-        if (err || !row) return res.json({ foro: 1, videos: 1, cursos: 1, registro: 1 });
-        res.json(row);
-    });
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
-// B. Guardar la configuración (Lo usa el Admin al mover los interruptores)
-app.put('/api/settings', verifyAdmin, (req, res) => {
-    const { foro, videos, cursos, registro } = req.body;
-    db.run("UPDATE configuracion SET foro = ?, videos = ?, cursos = ?, registro = ? WHERE id = 1", 
-        [foro ? 1 : 0, videos ? 1 : 0, cursos ? 1 : 0, registro ? 1 : 0], 
-        (err) => {
-            if(err) return res.status(500).json({error: 'Error guardando configuraciones'});
-            res.json({message: 'Módulos actualizados en toda la plataforma'});
-        }
-    );
-});
+async function initDB() {
+    try {
+        // 1. Tabla de Usuarios
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                usuario TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            );
+        `);
+
+        // 2. Tabla de Configuración (Interruptores del Admin)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS configuracion (
+                id INTEGER PRIMARY KEY,
+                foro INTEGER DEFAULT 1,
+                videos INTEGER DEFAULT 1,
+                cursos INTEGER DEFAULT 1,
+                registro INTEGER DEFAULT 1
+            );
+        `);
+
+        await pool.query(`
+            INSERT INTO configuracion (id, foro, videos, cursos, registro)
+            VALUES (1, 1, 1, 1, 1)
+            ON CONFLICT (id) DO NOTHING;
+        `);
+
+        // 3. Tabla de Videos (Prácticas de estudiantes)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS videos (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT,
+                url TEXT NOT NULL,
+                author TEXT NOT NULL
+            );
+        `);
+
+        console.log("✅ Conectado a Supabase y tablas listas.");
+    } catch (err) {
+        console.error("❌ Error inicializando Supabase:", err.message);
+    }
+}
+initDB();
 
 // Variables en memoria solo para el chat en vivo
 const chatMessages = [
@@ -83,122 +91,139 @@ const chatMessages = [
 const onlineUsers = {};
 
 // ==========================================
+// RUTAS DE CONFIGURACIÓN GLOBAL (NUBE)
+// ==========================================
+app.get('/api/settings', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM configuracion WHERE id = 1');
+        res.json(result.rows[0] || { foro: 1, videos: 1, cursos: 1, registro: 1 });
+    } catch (err) {
+        res.json({ foro: 1, videos: 1, cursos: 1, registro: 1 });
+    }
+});
+
+app.put('/api/settings', verifyAdmin, async (req, res) => {
+    const { foro, videos, cursos, registro } = req.body;
+    try {
+        await pool.query(
+            'UPDATE configuracion SET foro = $1, videos = $2, cursos = $3, registro = $4 WHERE id = 1',
+            [foro ? 1 : 0, videos ? 1 : 0, cursos ? 1 : 0, registro ? 1 : 0]
+        );
+        res.json({ message: 'Módulos actualizados en toda la plataforma' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error guardando configuraciones' });
+    }
+});
+
+// ==========================================
 // CAPA LÓGICA (BLL): RUTAS DE AUTENTICACIÓN
 // ==========================================
 
 // 1. Registro Seguro (Hashing)
 app.post('/api/auth/register', async (req, res) => {
     const { name, email, usuario, password } = req.body;
-    
     try {
-        // Encriptar la contraseña con un "salt" de 10 rondas de seguridad
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        const query = `INSERT INTO users (name, email, usuario, password) VALUES (?, ?, ?, ?)`;
-        db.run(query, [name, email, usuario, hashedPassword], function(err) {
-            if (err) {
-                if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'El correo o usuario ya existe en la base de datos.' });
-                return res.status(500).json({ error: 'Error interno del servidor.' });
-            }
-            res.status(201).json({ message: 'Usuario creado', user: { name, email, usuario } });
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Error encriptando la contraseña' });
+        await pool.query(
+            'INSERT INTO usuarios (name, email, usuario, password) VALUES ($1, $2, $3, $4)',
+            [name, email, usuario, hashedPassword]
+        );
+        res.status(201).json({ message: 'Usuario creado', user: { name, email, usuario } });
+    } catch (err) {
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'El correo o usuario ya existe en la base de datos.' });
+        }
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
 
 // 2. Login Seguro (Validación Hash)
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
     const { identifier, password } = req.body;
-    
-    const query = `SELECT * FROM users WHERE usuario = ? OR email = ?`;
-    db.get(query, [identifier, identifier], async (err, user) => {
-        if (err) return res.status(500).json({ error: 'Error consultando la base de datos.' });
-        if (!user) return res.status(401).json({ error: 'Credenciales incorrectas.' });
-        
-        try {
-            // Comparar la contraseña ingresada con el hash guardado en la base de datos
-            const isMatch = await bcrypt.compare(password, user.password);
-            
-            if (!isMatch) {
-                return res.status(401).json({ error: 'Credenciales incorrectas.' });
-            }
-            
-            const token = jwt.sign({ id: user.id, usuario: user.usuario }, JWT_SECRET, { expiresIn: '8h' });
-            
-            // Retornamos el usuario sin el hash de contraseña
-            const safeUser = { name: user.name, email: user.email, usuario: user.usuario };
-            res.json({ message: 'Acceso concedido', token, user: safeUser });
-            
-        } catch (error) {
-            res.status(500).json({ error: 'Error verificando seguridad' });
+    try {
+        const result = await pool.query(
+            'SELECT * FROM usuarios WHERE usuario = $1 OR email = $1',
+            [identifier]
+        );
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Credenciales incorrectas.' });
         }
-    });
+
+        const user = result.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Credenciales incorrectas.' });
+        }
+
+        const token = jwt.sign({ id: user.id, usuario: user.usuario }, JWT_SECRET, { expiresIn: '8h' });
+        const safeUser = { name: user.name, email: user.email, usuario: user.usuario };
+        res.json({ message: 'Acceso concedido', token, user: safeUser });
+    } catch (error) {
+        res.status(500).json({ error: 'Error consultando la base de datos.' });
+    }
 });
 
 // 3. Actualizar Perfil
-app.put('/api/user/profile', (req, res) => {
+app.put('/api/user/profile', async (req, res) => {
     const { usuario, newName } = req.body;
-    db.run(`UPDATE users SET name = ? WHERE usuario = ?`, [newName, usuario], function(err) {
-        if (err) return res.status(500).json({ error: 'Error al actualizar perfil' });
+    try {
+        await pool.query('UPDATE usuarios SET name = $1 WHERE usuario = $2', [newName, usuario]);
         res.json({ message: 'Perfil actualizado', user: { name: newName, usuario } });
-    });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al actualizar perfil' });
+    }
 });
 
 // 4. Cambiar Contraseña Segura (Hashing)
-app.put('/api/user/password', (req, res) => {
+app.put('/api/user/password', async (req, res) => {
     const { usuario, currentPassword, newPassword } = req.body;
-    
-    db.get(`SELECT password FROM users WHERE usuario = ?`, [usuario], async (err, user) => {
-        if (err || !user) return res.status(404).json({ error: 'Usuario no encontrado' });
-        
-        try {
-            // Verificar que la contraseña actual proporcionada es correcta
-            const isMatch = await bcrypt.compare(currentPassword, user.password);
-            if (!isMatch) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
-            
-            // Encriptar la nueva contraseña
-            const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-            
-            db.run(`UPDATE users SET password = ? WHERE usuario = ?`, [hashedNewPassword, usuario], function(err2) {
-                if (err2) return res.status(500).json({ error: 'Error al actualizar contraseña' });
-                res.json({ message: 'Contraseña actualizada' });
-            });
-            
-        } catch (error) {
-            res.status(500).json({ error: 'Error de encriptación al actualizar' });
-        }
-    });
+    try {
+        const result = await pool.query('SELECT password FROM usuarios WHERE usuario = $1', [usuario]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        const isMatch = await bcrypt.compare(currentPassword, result.rows[0].password);
+        if (!isMatch) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE usuarios SET password = $1 WHERE usuario = $2', [hashedNewPassword, usuario]);
+        res.json({ message: 'Contraseña actualizada' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar contraseña' });
+    }
 });
 
 // ==========================================
 // CAPA LÓGICA: RUTAS DE VIDEOTECA
 // ==========================================
-app.get('/api/videos', (req, res) => {
-    db.all(`SELECT * FROM videos ORDER BY id DESC`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Error consultando videos' });
-        
-        const formattedVideos = rows.map(r => ({
+app.get('/api/videos', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM videos ORDER BY id DESC');
+        const formattedVideos = result.rows.map(r => ({
             id: 'local_' + r.id,
             title: r.title,
-            desc: r.desc,
+            desc: r.description,
             videoId: r.url.includes('v=') ? r.url.split('v=')[1].split('&')[0] : r.url.split('/').pop(),
             type: r.url.includes('tiktok') ? 'tiktok' : (r.url.includes('instagram') ? 'instagram' : 'youtube'),
             tag: 'Aporte de: ' + r.author,
             isLocal: false
         }));
         res.json(formattedVideos);
-    });
+    } catch (err) {
+        res.status(500).json({ error: 'Error consultando videos' });
+    }
 });
 
-app.post('/api/videos/upload', (req, res) => {
+app.post('/api/videos/upload', async (req, res) => {
     const { title, desc, url, author } = req.body;
-    const query = `INSERT INTO videos (title, desc, url, author) VALUES (?, ?, ?, ?)`;
-    
-    db.run(query, [title, desc, url, author], function(err) {
-        if (err) return res.status(500).json({ error: 'Error al guardar video en DB' });
+    try {
+        await pool.query(
+            'INSERT INTO videos (title, description, url, author) VALUES ($1, $2, $3, $4)',
+            [title, desc, url, author]
+        );
         res.status(200).json({ message: 'Video registrado exitosamente' });
-    });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al guardar video en DB' });
+    }
 });
 
 // ==========================================
@@ -225,50 +250,22 @@ io.on('connection', (socket) => {
 // ==========================================
 // RUTAS DE ADMINISTRACIÓN (PANEL DE CONTROL)
 // ==========================================
-
-// 1. Middleware de seguridad: Verifica que la petición venga del Admin
-const verifyAdmin = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    // Validamos el token que definimos en admin.html
-    if (authHeader === 'Bearer simulated_token_123') {
-        next();
-    } else {
-        res.status(403).json({ error: 'Acceso denegado. Token de administrador inválido o ausente.' });
+app.get('/api/admin/users', verifyAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT name, email, usuario FROM usuarios ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al leer la base de datos' });
     }
-};
-
-// 2. Ruta para obtener todos los estudiantes (GET)
-app.get('/api/admin/users', verifyAdmin, (req, res) => {
-    // Busca en la tabla de usuarios (adaptado por si tu tabla se llama 'usuarios' o 'users')
-    const query = "SELECT name, email, usuario FROM usuarios";
-    db.all(query, [], (err, rows) => {
-        if (err) {
-            // Plan de contingencia si la tabla se llama 'users' en inglés
-            db.all("SELECT name, email, usuario FROM users", [], (err2, rows2) => {
-                if (err2) return res.status(500).json({ error: 'Error al leer la base de datos' });
-                res.json(rows2);
-            });
-        } else {
-            res.json(rows);
-        }
-    });
 });
 
-// 3. Ruta para eliminar un estudiante (DELETE)
-app.delete('/api/admin/users/:usuario', verifyAdmin, (req, res) => {
-    const username = req.params.usuario;
-    const query = "DELETE FROM usuarios WHERE usuario = ?";
-    
-    db.run(query, [username], function(err) {
-        if (err) {
-            db.run("DELETE FROM users WHERE usuario = ?", [username], function(err2) {
-                if (err2) return res.status(500).json({ error: 'Error al eliminar' });
-                res.json({ message: 'Estudiante eliminado exitosamente' });
-            });
-        } else {
-            res.json({ message: 'Estudiante eliminado exitosamente' });
-        }
-    });
+app.delete('/api/admin/users/:usuario', verifyAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM usuarios WHERE usuario = $1', [req.params.usuario]);
+        res.json({ message: 'Estudiante eliminado exitosamente' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al eliminar' });
+    }
 });
 
 // Inicializar Servidor
